@@ -183,9 +183,11 @@ export default function DashboardPage() {
             <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">HQ research console</div>
           </div>
         </div>
-        <div className="hidden items-center gap-2 text-xs text-slate-500 sm:flex">
+        <div className="flex items-center gap-2 text-xs text-slate-500">
+          <a href="/" className="rounded-lg bg-blue-50 px-3 py-2 font-semibold text-blue-700">Overview</a>
+          <a href="/reports" className="rounded-lg px-3 py-2 text-slate-500 hover:bg-slate-100">Reports</a>
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40" />
-          Monitoring systems operational
+          <span className="hidden sm:inline">Monitoring systems operational</span>
         </div>
       </nav>
       <header className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">

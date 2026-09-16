@@ -191,6 +191,53 @@ PostgreSQL when the services are stopped.
 - **Never-ending browser errors**: run
   `npx playwright install chromium` from the `scraper` folder again.
 
+## Scheduled reports
+
+The dashboard includes a full Reports workspace at
+`http://localhost:3000/reports`. From there you can create a schedule with a
+recipient email, keyword scope, and platform filter. The first delivery is due
+immediately; every later delivery is scheduled 24 hours after the previous
+attempt. Sent PDFs are retained in the database and can be downloaded from the
+report history.
+
+### Configure email delivery
+
+Apply the updated schema after pulling this feature:
+
+```powershell
+psql social_intel -f db\schema.sql
+```
+
+Add these values to `dashboard\.env`:
+
+```text
+APP_URL=http://localhost:3000
+REPORT_WORKER_SECRET=use-a-long-random-secret
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=reports@example.com
+SMTP_PASSWORD=your-smtp-password
+REPORT_FROM_EMAIL=reports@example.com
+```
+
+Use an SMTP provider or mailbox specifically intended for application
+delivery. Do not commit these credentials.
+
+### Run the report worker
+
+Keep the dashboard running, then open another PowerShell window:
+
+```powershell
+cd "d:\social-intel-dashboard\dashboard"
+npm run reports:worker
+```
+
+The worker checks for due schedules every minute and sends each due PDF once.
+For production, run this command under PM2, systemd, Windows Task Scheduler,
+or another process manager so it restarts automatically. The worker is
+intentionally separate from the Next.js web process because serverless and
+web-request lifecycles do not guarantee a 24-hour timer.
+
 ## How a "scan" flows
 
 1. Dashboard `POST /api/scrape { keyword, platforms, targets }`
