@@ -20,14 +20,13 @@ async function runSchedule(schedule: {
   if (!response.ok) throw new Error(`PDF generation failed with status ${response.status}.`);
   const pdf = Buffer.from(await response.arrayBuffer());
   const fileName = `signal-intel-${new Date().toISOString().slice(0, 10)}.pdf`;
-  const { transporter, from } = createMailer();
-  await transporter.sendMail({
-    from,
-    to: schedule.recipient_email,
-    subject: `Signal / Intel report${schedule.keyword ? ` — ${schedule.keyword}` : ""}`,
-    text: "Your scheduled Social Intelligence report is attached.",
-    attachments: [{ filename: fileName, content: pdf, contentType: "application/pdf" }],
-  });
+  const { sendReport } = createMailer();
+  await sendReport(
+    schedule.recipient_email,
+    `Signal / Intel report${schedule.keyword ? ` — ${schedule.keyword}` : ""}`,
+    pdf,
+    fileName
+  );
   await pool.query(
     `INSERT INTO generated_reports (schedule_id, recipient_email, keyword, platform, file_name, pdf_data)
      VALUES ($1, $2, $3, $4, $5, $6)`,

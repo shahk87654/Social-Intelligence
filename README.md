@@ -200,7 +200,7 @@ immediately; every later delivery is scheduled 24 hours after the previous
 attempt. Sent PDFs are retained in the database and can be downloaded from the
 report history.
 
-### Configure email delivery
+### Configure Resend email delivery
 
 Apply the updated schema after pulling this feature:
 
@@ -208,20 +208,18 @@ Apply the updated schema after pulling this feature:
 psql social_intel -f db\schema.sql
 ```
 
-Add these values to `dashboard\.env`:
+Create a Resend account, create an API key, and verify the domain or sender
+address you will use. Then add these values to `dashboard\.env`:
 
 ```text
 APP_URL=http://localhost:3000
 REPORT_WORKER_SECRET=use-a-long-random-secret
-SMTP_HOST=smtp.example.com
-SMTP_PORT=587
-SMTP_USER=reports@example.com
-SMTP_PASSWORD=your-smtp-password
-REPORT_FROM_EMAIL=reports@example.com
+RESEND_API_KEY=re_xxxxxxxxx
+REPORT_FROM_EMAIL=reports@your-verified-domain.com
 ```
 
-Use an SMTP provider or mailbox specifically intended for application
-delivery. Do not commit these credentials.
+The sender address must belong to a verified Resend domain (or use the sender
+address Resend provides for testing). Do not commit the API key.
 
 ### Run the report worker
 

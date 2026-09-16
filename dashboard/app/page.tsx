@@ -5,6 +5,7 @@ import StatsCards from "@/components/StatsCards";
 import Filters, { FilterState } from "@/components/Filters";
 import PostTable from "@/components/PostTable";
 import AnalyticsCharts from "@/components/AnalyticsCharts";
+import Sidebar from "@/components/Sidebar";
 
 async function readJson<T>(res: Response): Promise<T & { error?: string }> {
   const text = await res.text();
@@ -172,24 +173,9 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="mx-auto max-w-[1500px] px-4 py-6 sm:px-6 lg:px-8">
-      <nav className="mb-10 flex items-center justify-between border-b border-slate-200 pb-5">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 text-sm font-black text-white shadow-lg shadow-blue-500/20">
-            SI
-          </div>
-          <div>
-            <div className="text-sm font-semibold tracking-tight text-slate-900">Signal / Intel</div>
-            <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">HQ research console</div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-slate-500">
-          <a href="/" className="rounded-lg bg-blue-50 px-3 py-2 font-semibold text-blue-700">Overview</a>
-          <a href="/reports" className="rounded-lg px-3 py-2 text-slate-500 hover:bg-slate-100">Reports</a>
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40" />
-          <span className="hidden sm:inline">Monitoring systems operational</span>
-        </div>
-      </nav>
+    <div className="min-h-screen lg:pl-64">
+      <Sidebar />
+      <main className="mx-auto max-w-[1500px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
       <header className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-400">
@@ -370,6 +356,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </section>
-    </main>
+      </main>
+    </div>
   );
 }

@@ -1,23 +1,24 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 export function createMailer() {
-  const host = process.env.SMTP_HOST;
-  const port = Number(process.env.SMTP_PORT || 587);
-  const user = process.env.SMTP_USER;
-  const password = process.env.SMTP_PASSWORD;
-  const from = process.env.REPORT_FROM_EMAIL || user;
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.REPORT_FROM_EMAIL;
 
-  if (!host || !user || !password || !from) {
-    throw new Error("SMTP_HOST, SMTP_USER, SMTP_PASSWORD, and REPORT_FROM_EMAIL must be configured.");
+  if (!apiKey || !from) {
+    throw new Error("RESEND_API_KEY and REPORT_FROM_EMAIL must be configured.");
   }
 
+  const resend = new Resend(apiKey);
   return {
-    transporter: nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465,
-      auth: { user, pass: password },
-    }),
-    from,
+    sendReport: async (to: string, subject: string, pdf: Buffer, fileName: string) => {
+      const result = await resend.emails.send({
+        from,
+        to,
+        subject,
+        text: "Your scheduled Social Intelligence report is attached.",
+        attachments: [{ filename: fileName, content: pdf }],
+      });
+      if (result.error) throw new Error(result.error.message);
+    },
   };
 }
