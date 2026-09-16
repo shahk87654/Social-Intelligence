@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(59, 130, 246, 0.09), transparent 30rem),
+    radial-gradient(circle at 90% 12%, rgba(139, 92, 246, 0.07), transparent 26rem),
+    #f6f8fc;
+  color: #0f172a;
+}
+
+::selection {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+@layer components {
+  .panel {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60;
+  }
+
+  .hq-card {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60;
+  }
+
+  .eyebrow {
+    @apply text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-600;
+  }
+
+  .gradient-border {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.45), rgba(124, 58, 237, 0.18), transparent 58%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  .field {
+    @apply w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500/70 focus:bg-white focus:ring-2 focus:ring-blue-500/10;
+  }
+
+  .select-field {
+    @apply rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-600 outline-none transition focus:border-blue-500/70;
+  }
+}
