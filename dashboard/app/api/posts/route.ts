@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
     const sp = req.nextUrl.searchParams;
     const q = sp.get("q")?.trim();
     const platform = sp.get("platform");
@@ -18,8 +21,8 @@ export async function GET(req: NextRequest) {
     const allowedSort = new Set(["post_date", "likes", "comments", "shares", "scraped_at"]);
     const sortCol = allowedSort.has(sort) ? sort : "post_date";
 
-    const conditions: string[] = [];
-    const params: unknown[] = [];
+    const conditions: string[] = ["organization_id = $1"];
+    const params: unknown[] = [user.organization_id];
 
     if (q) {
      params.push(`%${q}%`);
@@ -68,7 +71,9 @@ export async function GET(req: NextRequest) {
 
 export async function DELETE() {
   try {
-    await pool.query("TRUNCATE TABLE posts, scan_runs RESTART IDENTITY CASCADE");
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+    await pool.query("DELETE FROM posts WHERE organization_id = $1; DELETE FROM scan_runs WHERE organization_id = $1", [user.organization_id]);
     return NextResponse.json({ success: true, cleared: true });
   } catch (error) {
     console.error("Failed to clear records", error);

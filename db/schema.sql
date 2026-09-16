@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS serpapi_usage (
 
 CREATE TABLE IF NOT EXISTS scan_runs (
     id            SERIAL PRIMARY KEY,
+    organization_id INTEGER,
     keyword       TEXT NOT NULL,
     platforms     TEXT[] NOT NULL,
     status        TEXT NOT NULL DEFAULT 'pending', -- pending | running | completed | failed
@@ -24,6 +25,7 @@ CREATE TABLE IF NOT EXISTS scan_runs (
 
 CREATE TABLE IF NOT EXISTS posts (
     id              SERIAL PRIMARY KEY,
+    organization_id INTEGER,
     scan_run_id     INTEGER REFERENCES scan_runs(id) ON DELETE SET NULL,
     platform        TEXT NOT NULL CHECK (platform IN ('facebook', 'instagram', 'article', 'website', 'google_review')),
     post_url        TEXT NOT NULL,
@@ -38,8 +40,13 @@ CREATE TABLE IF NOT EXISTS posts (
     comments        INTEGER DEFAULT 0,
     shares          INTEGER DEFAULT 0,
     scraped_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    UNIQUE (platform, post_url)
+    UNIQUE (organization_id, platform, post_url)
 );
+
+ALTER TABLE scan_runs ADD COLUMN IF NOT EXISTS organization_id INTEGER;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS organization_id INTEGER;
+CREATE INDEX IF NOT EXISTS idx_scan_runs_org ON scan_runs(organization_id, started_at DESC);
+CREATE INDEX IF NOT EXISTS idx_posts_org ON posts(organization_id, scraped_at DESC);
 
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS group_name TEXT;
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS group_url TEXT;
@@ -72,6 +79,7 @@ CREATE INDEX IF NOT EXISTS idx_posts_content_fingerprint ON posts(content_finger
 
 CREATE TABLE IF NOT EXISTS report_schedules (
     id              SERIAL PRIMARY KEY,
+    organization_id INTEGER,
     name            TEXT NOT NULL,
     recipient_email TEXT NOT NULL,
     keyword         TEXT,
@@ -100,6 +108,46 @@ CREATE TABLE IF NOT EXISTS generated_reports (
 
 CREATE INDEX IF NOT EXISTS idx_report_schedules_due ON report_schedules(enabled, next_run_at);
 CREATE INDEX IF NOT EXISTS idx_generated_reports_schedule ON generated_reports(schedule_id, generated_at DESC);
+
+ALTER TABLE report_schedules ADD COLUMN IF NOT EXISTS frequency TEXT NOT NULL DEFAULT 'daily';
+ALTER TABLE report_schedules ADD COLUMN IF NOT EXISTS timezone TEXT NOT NULL DEFAULT 'UTC';
+ALTER TABLE report_schedules ADD COLUMN IF NOT EXISTS report_format TEXT NOT NULL DEFAULT 'pdf';
+ALTER TABLE report_schedules ADD COLUMN IF NOT EXISTS recipients TEXT[] NOT NULL DEFAULT '{}';
+ALTER TABLE report_schedules ADD COLUMN IF NOT EXISTS cc_recipients TEXT[] NOT NULL DEFAULT '{}';
+ALTER TABLE report_schedules ADD COLUMN IF NOT EXISTS email_subject TEXT;
+ALTER TABLE report_schedules ADD COLUMN IF NOT EXISTS email_message TEXT;
+ALTER TABLE report_schedules ADD COLUMN IF NOT EXISTS organization_id INTEGER;
+
+CREATE TABLE IF NOT EXISTS dashboard_preferences (
+    user_id      INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    widgets      JSONB NOT NULL DEFAULT '{"stats":true,"analytics":true,"mentions":true}'::jsonb,
+    updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS api_keys (
+    id              SERIAL PRIMARY KEY,
+    organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    name            TEXT NOT NULL,
+    key_prefix      TEXT NOT NULL,
+    key_hash        TEXT NOT NULL UNIQUE,
+    created_by      INTEGER NOT NULL REFERENCES users(id),
+    last_used_at    TIMESTAMPTZ,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS webhooks (
+    id              SERIAL PRIMARY KEY,
+    organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    name            TEXT NOT NULL,
+    endpoint_url    TEXT NOT NULL,
+    secret          TEXT NOT NULL,
+    events          TEXT[] NOT NULL DEFAULT '{}',
+    enabled         BOOLEAN NOT NULL DEFAULT true,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_api_keys_org ON api_keys(organization_id);
+CREATE INDEX IF NOT EXISTS idx_webhooks_org ON webhooks(organization_id, enabled);
 
 CREATE TABLE IF NOT EXISTS organizations (
     id         SERIAL PRIMARY KEY,
@@ -158,6 +206,26 @@ CREATE TABLE IF NOT EXISTS organization_invites (
 
 CREATE INDEX IF NOT EXISTS idx_sessions_expiry ON sessions(expires_at);
 CREATE INDEX IF NOT EXISTS idx_projects_org ON monitoring_projects(organization_id);
+UPDATE scan_runs SET organization_id = (SELECT id FROM organizations ORDER BY id LIMIT 1) WHERE organization_id IS NULL;
+UPDATE posts SET organization_id = (SELECT organization_id FROM scan_runs WHERE scan_runs.id = posts.scan_run_id) WHERE organization_id IS NULL;
+UPDATE report_schedules SET organization_id = (SELECT id FROM organizations ORDER BY id LIMIT 1) WHERE organization_id IS NULL;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'scan_runs_organization_id_fkey') THEN
+        ALTER TABLE scan_runs ADD CONSTRAINT scan_runs_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'posts_organization_id_fkey') THEN
+        ALTER TABLE posts ADD CONSTRAINT posts_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'report_schedules_organization_id_fkey') THEN
+        ALTER TABLE report_schedules ADD CONSTRAINT report_schedules_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
+    END IF;
+    ALTER TABLE posts DROP CONSTRAINT IF EXISTS posts_platform_post_url_key;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_posts_org_platform_url ON posts(organization_id, platform, post_url);
 
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS assigned_to INTEGER REFERENCES users(id) ON DELETE SET NULL;
 

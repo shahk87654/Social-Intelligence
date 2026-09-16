@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
     const scraperUrl = process.env.SCRAPER_URL || "http://localhost:4000";
-    const resp = await fetch(`${scraperUrl}/scan/${params.id}`);
+    const resp = await fetch(`${scraperUrl}/scan/${params.id}?organizationId=${user.organization_id}`);
     const text = await resp.text();
     let data: unknown;
     try {

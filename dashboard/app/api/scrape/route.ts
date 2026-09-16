@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
     const body = await req.json();
     const scraperUrl = process.env.SCRAPER_URL || "http://localhost:4000";
 
     const resp = await fetch(`${scraperUrl}/scrape`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ ...body, organizationId: user.organization_id }),
     });
     const text = await resp.text();
     let data: unknown;

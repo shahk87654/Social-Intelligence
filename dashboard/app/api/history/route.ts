@@ -6,10 +6,11 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    if (!await getCurrentUser()) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
     const result = await pool.query(
       `SELECT id, keyword, platforms, status, error, started_at, finished_at, posts_found
-       FROM scan_runs ORDER BY started_at DESC LIMIT 100`
+       FROM scan_runs WHERE organization_id = $1 ORDER BY started_at DESC LIMIT 100`, [user.organization_id]
     );
     return NextResponse.json({ scans: result.rows });
   } catch (error) {

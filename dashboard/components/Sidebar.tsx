@@ -9,6 +9,9 @@ const links = [
   { href: "/search", label: "Global search", icon: "⌕" },
   { href: "/team", label: "Team", icon: "♧" },
   { href: "/alerts", label: "Alerts", icon: "!" },
+  { href: "/comparison", label: "Compare", icon: "⇄" },
+  { href: "/settings", label: "Settings", icon: "⚙" },
+  { href: "/integrations", label: "Integrations", icon: "⌘" },
   { href: "/reports", label: "Reports", icon: "↗" },
 ];
 

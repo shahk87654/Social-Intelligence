@@ -40,7 +40,7 @@ function date(value: string | null) {
 export default function ReportsPage() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
-  const [form, setForm] = useState({ name: "", recipientEmail: "", keyword: "", platform: "all" });
+  const [form, setForm] = useState({ name: "", recipientEmail: "", recipients: "", ccRecipients: "", keyword: "", platform: "all", frequency: "daily", timezone: "UTC", reportFormat: "pdf", emailSubject: "", emailMessage: "" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,12 +66,16 @@ export default function ReportsPage() {
     const response = await fetch("/api/report-schedules", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({
+        ...form,
+        recipients: form.recipients.split(",").map((value) => value.trim()).filter(Boolean),
+        ccRecipients: form.ccRecipients.split(",").map((value) => value.trim()).filter(Boolean),
+      }),
     });
     const data = await readData<{ error?: string }>(response);
     if (!response.ok) setError(data.error || "Unable to create schedule.");
     else {
-      setForm({ name: "", recipientEmail: "", keyword: "", platform: "all" });
+      setForm({ name: "", recipientEmail: "", recipients: "", ccRecipients: "", keyword: "", platform: "all", frequency: "daily", timezone: "UTC", reportFormat: "pdf", emailSubject: "", emailMessage: "" });
       await load();
     }
     setSaving(false);
@@ -117,8 +121,14 @@ export default function ReportsPage() {
           <form onSubmit={createSchedule} className="space-y-4">
             <label className="block text-sm font-medium text-slate-700">Schedule name<input required className="field mt-2" placeholder="Daily executive brief" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label>
             <label className="block text-sm font-medium text-slate-700">Recipient email<input required type="email" className="field mt-2" placeholder="team@example.com" value={form.recipientEmail} onChange={(e) => setForm({ ...form, recipientEmail: e.target.value })} /></label>
+            <input className="field" placeholder="Additional recipients, comma-separated" value={form.recipients} onChange={(e) => setForm({ ...form, recipients: e.target.value })} />
+            <input className="field" placeholder="CC recipients, comma-separated" value={form.ccRecipients} onChange={(e) => setForm({ ...form, ccRecipients: e.target.value })} />
             <label className="block text-sm font-medium text-slate-700">Keyword scope<span className="mt-1 block text-xs font-normal text-slate-400">Leave blank to include every collected source.</span><input className="field mt-2" placeholder="brand, campaign, product..." value={form.keyword} onChange={(e) => setForm({ ...form, keyword: e.target.value })} /></label>
             <label className="block text-sm font-medium text-slate-700">Platform<select className="select-field mt-2 w-full" value={form.platform} onChange={(e) => setForm({ ...form, platform: e.target.value })}><option value="all">All platforms</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="article">Articles</option><option value="website">Websites</option><option value="google_review">Google reviews</option></select></label>
+            <div className="grid gap-3 sm:grid-cols-2"><label className="block text-sm font-medium text-slate-700">Frequency<select className="select-field mt-2 w-full" value={form.frequency} onChange={(e) => setForm({ ...form, frequency: e.target.value })}><option value="daily">Every 24 hours</option><option value="weekly">Every 7 days</option></select></label><label className="block text-sm font-medium text-slate-700">Time zone<select className="select-field mt-2 w-full" value={form.timezone} onChange={(e) => setForm({ ...form, timezone: e.target.value })}><option>UTC</option><option>Asia/Karachi</option><option>America/New_York</option><option>Europe/London</option></select></label></div>
+            <label className="block text-sm font-medium text-slate-700">Report format<select className="select-field mt-2 w-full" value={form.reportFormat} onChange={(e) => setForm({ ...form, reportFormat: e.target.value })}><option value="pdf">PDF</option><option value="csv">CSV</option></select></label>
+            <input className="field" placeholder="Custom email subject (optional)" value={form.emailSubject} onChange={(e) => setForm({ ...form, emailSubject: e.target.value })} />
+            <textarea className="field min-h-20 resize-y" placeholder="Custom email message (optional)" value={form.emailMessage} onChange={(e) => setForm({ ...form, emailMessage: e.target.value })} />
             <button disabled={saving} className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-violet-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 disabled:opacity-50">{saving ? "Creating…" : "Create schedule"}</button>
           </form>
           <div className="mt-5 rounded-xl border border-blue-100 bg-blue-50 p-4 text-xs leading-relaxed text-blue-800">The first report is due immediately after creation. After each successful or failed attempt, the next run is scheduled exactly 24 hours later.</div>

@@ -7,30 +7,41 @@ export const maxDuration = 60;
 
 async function runSchedule(schedule: {
   id: number;
+  organization_id: number;
   recipient_email: string;
   keyword: string | null;
   platform: string;
+  report_format: string;
+  frequency: string;
+  recipients: string[];
+  cc_recipients: string[];
+  email_subject: string | null;
+  email_message: string | null;
 }) {
   const baseUrl = process.env.APP_URL;
   if (!baseUrl) throw new Error("APP_URL must be configured for scheduled reports.");
-  const url = new URL("/api/report/pdf", baseUrl);
+  const url = new URL(schedule.report_format === "csv" ? "/api/report/csv" : "/api/report/pdf", baseUrl);
   if (schedule.keyword) url.searchParams.set("keyword", schedule.keyword);
+  url.searchParams.set("organizationId", String(schedule.organization_id));
   url.searchParams.set("platform", schedule.platform);
-  const response = await fetch(url, { cache: "no-store" });
-  if (!response.ok) throw new Error(`PDF generation failed with status ${response.status}.`);
-  const pdf = Buffer.from(await response.arrayBuffer());
-  const fileName = `signal-intel-${new Date().toISOString().slice(0, 10)}.pdf`;
+  const response = await fetch(url, { cache: "no-store", headers: { "x-report-worker-secret": process.env.REPORT_WORKER_SECRET || "" } });
+  if (!response.ok) throw new Error(`Report generation failed with status ${response.status}.`);
+  const fileData = Buffer.from(await response.arrayBuffer());
+  const extension = schedule.report_format === "csv" ? "csv" : "pdf";
+  const fileName = `signal-intel-${new Date().toISOString().slice(0, 10)}.${extension}`;
   const { sendReport } = createMailer();
   await sendReport(
-    schedule.recipient_email,
-    `Signal / Intel report${schedule.keyword ? ` — ${schedule.keyword}` : ""}`,
-    pdf,
-    fileName
+    schedule.recipients?.length ? schedule.recipients : [schedule.recipient_email],
+    schedule.email_subject || `Signal / Intel report${schedule.keyword ? ` — ${schedule.keyword}` : ""}`,
+    fileData,
+    fileName,
+    schedule.email_message || "Your scheduled Social Intelligence report is attached.",
+    schedule.cc_recipients || []
   );
   await pool.query(
     `INSERT INTO generated_reports (schedule_id, recipient_email, keyword, platform, file_name, pdf_data)
      VALUES ($1, $2, $3, $4, $5, $6)`,
-    [schedule.id, schedule.recipient_email, schedule.keyword, schedule.platform, fileName, pdf]
+    [schedule.id, schedule.recipient_email, schedule.keyword, schedule.platform, fileName, fileData]
   );
 }
 
@@ -44,7 +55,7 @@ export async function POST(req: Request) {
   try {
     await client.query("BEGIN");
     const { rows } = await client.query(
-      `SELECT id, recipient_email, keyword, platform
+      `            SELECT id, organization_id, recipient_email, keyword, platform, frequency, report_format, recipients, cc_recipients, email_subject, email_message
        FROM report_schedules
        WHERE enabled = true AND next_run_at <= now()
        ORDER BY next_run_at
@@ -53,7 +64,7 @@ export async function POST(req: Request) {
     const results: Array<{ id: number; status: string; error?: string }> = [];
     for (const schedule of rows) {
       await client.query(
-        `UPDATE report_schedules SET next_run_at = now() + interval '24 hours', last_run_at = now(), last_status = 'running', last_error = null, updated_at = now()
+        `UPDATE report_schedules SET next_run_at = now() + CASE WHEN frequency = 'weekly' THEN interval '7 days' ELSE interval '24 hours' END, last_run_at = now(), last_status = 'running', last_error = null, updated_at = now()
          WHERE id = $1`,
         [schedule.id]
       );

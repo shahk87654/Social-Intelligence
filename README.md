@@ -193,6 +193,17 @@ PostgreSQL when the services are stopped.
 
 ## Scheduled reports
 
+## Phase 3 integrations
+
+Phase 3 adds:
+
+- Keyword comparison at `/comparison`
+- Configurable dashboard widgets at `/settings`
+- Organization API keys and webhook registration at `/integrations`
+- Read-only API access at `/api/v1/posts` using `Authorization: Bearer <key>`
+
+API keys and webhook secrets are shown only when created. Store them securely.
+
 ## Accounts and Phase 1 workspace features
 
 The dashboard now starts with a private account and workspace flow:

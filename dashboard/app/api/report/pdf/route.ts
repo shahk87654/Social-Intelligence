@@ -1,6 +1,7 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import PDFDocument from "pdfkit";
 import { pool } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -42,10 +43,15 @@ function sectionTitle(doc: PDFKit.PDFDocument, eyebrow: string, heading: string)
 export async function GET(req: NextRequest) {
   try {
     const sp = req.nextUrl.searchParams;
+    const user = await getCurrentUser();
+    const workerAuthorized = Boolean(process.env.REPORT_WORKER_SECRET && req.headers.get("x-report-worker-secret") === process.env.REPORT_WORKER_SECRET);
+    const organizationId = user?.organization_id || (workerAuthorized ? Number(sp.get("organizationId")) : NaN);
+    if (!Number.isInteger(organizationId)) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
     const keyword = sp.get("keyword")?.trim() || null;
     const platform = sp.get("platform");
     const params: string[] = [];
-    const conditions: string[] = [];
+    const conditions: string[] = [`organization_id = $1`];
+    params.push(String(organizationId));
 
     if (keyword) {
       params.push(`%${keyword}%`);

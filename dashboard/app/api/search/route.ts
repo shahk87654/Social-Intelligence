@@ -6,16 +6,17 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
-    if (!await getCurrentUser()) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
     const q = req.nextUrl.searchParams.get("q")?.trim();
     if (!q) return NextResponse.json({ posts: [], projects: [], reports: [] });
     const term = `%${q}%`;
     const [posts, projects, reports] = await Promise.all([
       pool.query(
         `SELECT id, platform, author_name, content, post_url, scraped_at
-         FROM posts WHERE content ILIKE $1 OR author_name ILIKE $1 OR matched_keyword ILIKE $1
+         FROM posts WHERE organization_id = $2 AND (content ILIKE $1 OR author_name ILIKE $1 OR matched_keyword ILIKE $1)
          ORDER BY scraped_at DESC LIMIT 20`,
-        [term]
+        [term, user.organization_id]
       ),
       pool.query(
         `SELECT id, name, description, keywords FROM monitoring_projects

@@ -45,10 +45,33 @@ function contentFingerprint(post) {
   return normalized.length >= 40 ? crypto.createHash("sha256").update(normalized).digest("hex") : null;
 }
 
-export async function createScanRun(keyword, platforms) {
+async function dispatchWebhookEvent(organizationId, event, data) {
   const { rows } = await pool.query(
-    `INSERT INTO scan_runs (keyword, platforms, status) VALUES ($1, $2, 'running') RETURNING id`,
-    [keyword, platforms]
+    `SELECT endpoint_url, secret FROM webhooks
+     WHERE organization_id = $1 AND enabled = true AND ($2 = ANY(events) OR cardinality(events) = 0)`,
+    [organizationId, event]
+  );
+  const payload = JSON.stringify({ event, data, occurredAt: new Date().toISOString() });
+  await Promise.allSettled(rows.map(async (webhook) => {
+    const signature = crypto.createHmac("sha256", webhook.secret).update(payload).digest("hex");
+    try {
+      const response = await fetch(webhook.endpoint_url, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-webhook-signature": `sha256=${signature}` },
+        body: payload,
+        signal: AbortSignal.timeout(5000),
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    } catch (error) {
+      console.error(`webhook delivery failed for ${webhook.endpoint_url}:`, error.message);
+    }
+  }));
+}
+
+export async function createScanRun(keyword, platforms, organizationId) {
+  const { rows } = await pool.query(
+    `INSERT INTO scan_runs (organization_id, keyword, platforms, status) VALUES ($1, $2, $3, 'running') RETURNING id`,
+    [organizationId, keyword, platforms]
   );
   return rows[0].id;
 }
@@ -60,10 +83,11 @@ export async function finishScanRun(id, { status, error = null, postsFound = 0 }
   );
 }
 
-export async function evaluateAlerts(keyword, status, postsFound = 0) {
+export async function evaluateAlerts(keyword, status, postsFound = 0, organizationId) {
   const { rows: rules } = await pool.query(
     `SELECT id, organization_id, name, rule_type, keyword, threshold
-     FROM alert_rules WHERE enabled = true`
+     FROM alert_rules WHERE enabled = true AND organization_id = $1`,
+    [organizationId]
   );
   for (const rule of rules) {
     if (rule.keyword && !keyword.toLowerCase().includes(String(rule.keyword).toLowerCase())) continue;
@@ -84,9 +108,9 @@ export async function evaluateAlerts(keyword, status, postsFound = 0) {
     } else if (rule.rule_type === "negative_sentiment") {
       const negative = await pool.query(
         `SELECT COUNT(*)::int AS count FROM posts
-         WHERE sentiment = 'negative' AND scraped_at >= now() - interval '24 hours'
+         WHERE organization_id = $2 AND sentiment = 'negative' AND scraped_at >= now() - interval '24 hours'
          AND ($1::text IS NULL OR matched_keyword ILIKE '%' || $1 || '%')`,
-        [rule.keyword]
+        [rule.keyword, organizationId]
       );
       if (negative.rows[0].count >= (rule.threshold || 1)) {
         shouldAlert = true;
@@ -103,13 +127,15 @@ export async function evaluateAlerts(keyword, status, postsFound = 0) {
          )`,
         [rule.organization_id, rule.id, rule.name, message, severity]
       );
+      void dispatchWebhookEvent(organizationId, "alert.created", { ruleId: rule.id, title: rule.name, message, severity })
+        .catch((error) => console.error("alert webhook dispatch failed:", error.message));
     }
   }
 }
 
 // Upsert on (platform, post_url) so re-scanning doesn't duplicate rows;
 // engagement counts are refreshed on conflict since they change over time.
-export async function upsertPosts(scanRunId, keyword, posts) {
+export async function upsertPosts(scanRunId, keyword, posts, organizationId) {
   let count = 0;
   for (const p of posts) {
     const parsedDate = p.postDate ? new Date(String(p.postDate).replace(/[\u200e\u200f\u202a-\u202e]/g, "")) : null;
@@ -117,17 +143,17 @@ export async function upsertPosts(scanRunId, keyword, posts) {
     const fingerprint = contentFingerprint(p);
     const duplicate = fingerprint
       ? (await pool.query(
-          "SELECT EXISTS (SELECT 1 FROM posts WHERE content_fingerprint = $1 AND post_url <> $2) AS duplicate",
-          [fingerprint, p.postUrl]
+          "SELECT EXISTS (SELECT 1 FROM posts WHERE organization_id = $1 AND content_fingerprint = $2 AND post_url <> $3) AS duplicate",
+          [organizationId, fingerprint, p.postUrl]
         )).rows[0].duplicate
       : false;
     await pool.query(
       `INSERT INTO posts
-         (scan_run_id, platform, post_url, author_name, author_url, group_name, group_url, content,
+         (organization_id, scan_run_id, platform, post_url, author_name, author_url, group_name, group_url, content,
           matched_keyword, post_date, likes, comments, shares, sentiment, sentiment_score,
           is_duplicate, is_spam, source_quality_score, content_fingerprint)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
-       ON CONFLICT (platform, post_url) DO UPDATE SET
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
+       ON CONFLICT (organization_id, platform, post_url) DO UPDATE SET
          likes = EXCLUDED.likes,
          comments = EXCLUDED.comments,
          shares = EXCLUDED.shares,
@@ -142,6 +168,7 @@ export async function upsertPosts(scanRunId, keyword, posts) {
          content_fingerprint = EXCLUDED.content_fingerprint,
          scraped_at = now()`,
       [
+        organizationId,
         scanRunId,
         p.platform,
         p.postUrl,
@@ -164,6 +191,12 @@ export async function upsertPosts(scanRunId, keyword, posts) {
       ]
     );
     count++;
+    void dispatchWebhookEvent(organizationId, "mention.created", {
+      platform: p.platform,
+      postUrl: p.postUrl,
+      keyword,
+      sentiment: classifySentiment(p.content),
+    }).catch((error) => console.error("mention webhook dispatch failed:", error.message));
   }
 
   return count;

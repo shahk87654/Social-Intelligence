@@ -19,9 +19,9 @@ const app = express();
 app.use(express.json());
 
 app.post("/scrape", async (req, res) => {
-  const { keyword, platforms, targets = {} } = req.body || {};
+  const { keyword, platforms, targets = {}, organizationId } = req.body || {};
 
-  if (!keyword || typeof keyword !== "string") {
+  if (!keyword || typeof keyword !== "string" || !Number.isInteger(Number(organizationId))) {
     return res.status(400).json({ error: "keyword (string) is required" });
   }
   const requestedPlatforms = (platforms && platforms.length ? platforms : Object.keys(PLATFORM_REGISTRY))
@@ -33,7 +33,7 @@ app.post("/scrape", async (req, res) => {
 
   let scanRunId;
   try {
-    scanRunId = await createScanRun(keyword, requestedPlatforms);
+    scanRunId = await createScanRun(keyword, requestedPlatforms, Number(organizationId));
   } catch (err) {
     console.error("unable to create scan run:", err);
     return res.status(503).json({
@@ -45,19 +45,21 @@ app.post("/scrape", async (req, res) => {
   // in the DB as they're found. Dashboard polls /api/posts + scan status.
   res.json({ scanRunId, status: "running" });
 
-  runScan(scanRunId, keyword, requestedPlatforms, targets).catch((err) => {
+  runScan(scanRunId, keyword, requestedPlatforms, targets, Number(organizationId)).catch((err) => {
     console.error("scan failed:", err);
     Promise.all([
       finishScanRun(scanRunId, { status: "failed", error: err.message }),
-      evaluateAlerts(keyword, "failed", 0),
+      evaluateAlerts(keyword, "failed", 0, Number(organizationId)),
     ]).catch((alertError) => console.error("failed to record scan failure alert:", alertError));
   });
 });
 
 app.get("/scan/:id", async (req, res) => {
   try {
+    const organizationId = Number(req.query.organizationId);
+    if (!Number.isInteger(organizationId)) return res.status(400).json({ error: "organizationId is required" });
     const { pool } = await import("./db.js");
-    const { rows } = await pool.query("SELECT * FROM scan_runs WHERE id = $1", [req.params.id]);
+    const { rows } = await pool.query("SELECT * FROM scan_runs WHERE id = $1 AND organization_id = $2", [req.params.id, organizationId]);
     if (!rows.length) return res.status(404).json({ error: "not found" });
     res.json(rows[0]);
   } catch (err) {
@@ -68,7 +70,7 @@ app.get("/scan/:id", async (req, res) => {
   }
 });
 
-async function runScan(scanRunId, keyword, platforms, targets) {
+async function runScan(scanRunId, keyword, platforms, targets, organizationId) {
   const hasTargets = ["facebook", "instagram"].some((platform) => targets[platform]?.length);
   const browser = hasTargets ? await chromium.launch({ headless: true }) : null;
   let totalFound = 0;
@@ -106,17 +108,30 @@ async function runScan(scanRunId, keyword, platforms, targets) {
       const posts = [...webPosts, ...reviewPosts];
       const note = [webNote, reviewNote].filter(Boolean).join(" ");
       if (note) console.log("[google]", note);
-      totalFound += await upsertPosts(scanRunId, keyword, posts);
+      totalFound += await upsertPosts(scanRunId, keyword, posts, organizationId);
     } else {
       for (const platform of platforms) {
         const scraper = PLATFORM_REGISTRY[platform];
         const { posts, note } = await scraper.search(keyword, targets[platform] || [], { browser });
         if (note) console.log(`[${platform}]`, note);
-        totalFound += await upsertPosts(scanRunId, keyword, posts);
+        totalFound += await upsertPosts(scanRunId, keyword, posts, organizationId);
       }
     }
     await finishScanRun(scanRunId, { status: "completed", postsFound: totalFound });
-    await evaluateAlerts(keyword, "completed", totalFound);
+    await evaluateAlerts(keyword, "completed", totalFound, organizationId);
+    const { pool } = await import("./db.js");
+    const { rows } = await pool.query("SELECT endpoint_url, secret FROM webhooks WHERE organization_id = $1 AND enabled = true AND ('scan.completed' = ANY(events) OR cardinality(events) = 0)", [organizationId]);
+    const payload = JSON.stringify({ event: "scan.completed", data: { scanRunId, keyword, postsFound: totalFound }, occurredAt: new Date().toISOString() });
+    await Promise.allSettled(rows.map(async (webhook) => {
+      const crypto = await import("node:crypto");
+      const signature = crypto.createHmac("sha256", webhook.secret).update(payload).digest("hex");
+      try {
+        const response = await fetch(webhook.endpoint_url, { method: "POST", headers: { "content-type": "application/json", "x-webhook-signature": `sha256=${signature}` }, body: payload, signal: AbortSignal.timeout(5000) });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      } catch (error) {
+        console.error(`webhook delivery failed for ${webhook.endpoint_url}:`, error.message);
+      }
+    }));
   } finally {
     if (browser) await browser.close();
   }
