@@ -33,6 +33,7 @@ export default function DashboardPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
   const [filters, setFilters] = useState<FilterState>({
@@ -82,6 +83,31 @@ export default function DashboardPage() {
   useEffect(() => {
     loadPosts();
   }, [loadPosts]);
+
+  async function clearAllRecords() {
+    const confirmed = window.confirm("Clear all stored records and scan history? This cannot be undone.");
+    if (!confirmed) return;
+
+    setClearing(true);
+    setApiError(null);
+
+    try {
+      const res = await fetch("/api/posts", { method: "DELETE" });
+      const data = await readJson<{ error?: string }>(res);
+      if (!res.ok) {
+        throw new Error(data.error || "Unable to clear records.");
+      }
+
+      setPosts([]);
+      setTotal(0);
+      setPage(1);
+      await Promise.all([loadStats(), loadPosts()]);
+    } catch (error) {
+      setApiError(error instanceof Error ? error.message : "Unable to clear records.");
+    } finally {
+      setClearing(false);
+    }
+  }
 
   async function runScan() {
     if (!keyword.trim()) return;
@@ -302,6 +328,14 @@ export default function DashboardPage() {
             <p className="mt-1 text-xs text-slate-400">Filter, sort, and open a source to inspect it.</p>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={clearAllRecords}
+              disabled={clearing || scanning || loading}
+              className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {clearing ? "Clearing…" : "Clear all records"}
+            </button>
             <a
               href={`/api/report/pdf?keyword=${encodeURIComponent(filters.q)}&platform=${encodeURIComponent(filters.platform)}`}
               className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"

@@ -64,3 +64,16 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+export async function DELETE() {
+  try {
+    await pool.query("TRUNCATE TABLE posts, scan_runs RESTART IDENTITY CASCADE");
+    return NextResponse.json({ success: true, cleared: true });
+  } catch (error) {
+    console.error("Failed to clear records", error);
+    return NextResponse.json(
+      { error: "Database unavailable. Start PostgreSQL and initialize db/schema.sql." },
+      { status: 503 }
+    );
+  }
+}

@@ -35,36 +35,161 @@ scraper only needs to keep writing rows that match the schema in `db/schema.sql`
 I did not add anything that logs in, solves CAPTCHAs, or hits private
 endpoints, per your instructions.
 
-## Setup
+## Setup guide for beginners
 
-1. **Database**
-   ```bash
-   createdb social_intel
-   psql social_intel -f db/schema.sql
-   ```
+Follow these steps in order. If a command fails, do not skip the error:
+copy the complete error message and check the troubleshooting section below.
 
-2. **Scraper service**
-   ```bash
-   cd scraper
-   cp .env.example .env   # set DATABASE_URL
-   npm install
-   npx playwright install chromium
-   npm run dev             # starts API on :4000
-   ```
+### Step 1: Install the required software
 
-3. **Dashboard**
-   ```bash
-   cd dashboard
-   cp .env.example .env   # set DATABASE_URL and SCRAPER_URL
-   npm install
-   npm run dev              # starts on :3000
-   ```
+Install these programs before doing anything else:
 
-4. Open http://localhost:3000, enter a keyword, and hit **Scan**. When no
-   targets are supplied, the scraper uses public Google search results for
-   `site:facebook.com` and `site:instagram.com` queries, then categorizes
-   matching result URLs by platform. You can still provide specific public
-   Facebook Pages or Instagram hashtags/profiles for direct platform scans.
+1. **Node.js 20 or newer**: https://nodejs.org/
+2. **PostgreSQL 14 or newer**: https://www.postgresql.org/download/
+3. **Git** (optional, but useful): https://git-scm.com/downloads
+
+After installing Node.js, open a new PowerShell window and confirm it works:
+
+```powershell
+node --version
+npm --version
+```
+
+Both commands must print a version number. PostgreSQL must also be running.
+On Windows, you can start it from the Services app by starting the service
+whose name begins with `postgresql`.
+
+### Step 2: Open the project folder
+
+Open PowerShell and run:
+
+```powershell
+cd "d:\social-intel-dashboard"
+```
+
+If your project is in a different folder, replace the path with your actual
+project folder.
+
+### Step 3: Create the database
+
+PostgreSQL needs an empty database for this app. Run:
+
+```powershell
+createdb social_intel
+psql social_intel -f db\schema.sql
+```
+
+If PostgreSQL asks for a password, enter the password you chose when
+installing PostgreSQL. These commands only need to be run once.
+
+### Step 4: Configure the scraper
+
+Create the scraper's private environment file by copying the example:
+
+```powershell
+Copy-Item scraper\.env.example scraper\.env
+```
+
+Open `scraper\.env` in a text editor. At minimum, check these values:
+
+```text
+DATABASE_URL=postgres://localhost:5432/social_intel
+PORT=4000
+SERPAPI_KEY=your-search-provider-key
+```
+
+Replace `your-search-provider-key` with your real provider key. Never paste
+that key into the README, Git, screenshots, or chat. The `.env` file is private
+and must stay on your computer.
+
+Install the scraper packages and its browser:
+
+```powershell
+cd scraper
+npm install
+npx playwright install chromium
+cd ..
+```
+
+### Step 5: Configure the dashboard
+
+Create the dashboard's private environment file:
+
+```powershell
+Copy-Item dashboard\.env.example dashboard\.env
+```
+
+The default values work when PostgreSQL and the scraper run on this computer:
+
+```text
+DATABASE_URL=postgres://localhost:5432/social_intel
+SCRAPER_URL=http://localhost:4000
+```
+
+Install the dashboard packages:
+
+```powershell
+cd dashboard
+npm install
+cd ..
+```
+
+### Step 6: Start the scraper
+
+Keep this PowerShell window open. Run:
+
+```powershell
+cd "d:\social-intel-dashboard\scraper"
+npm run dev
+```
+
+The scraper is now running on `http://localhost:4000`. Do not close this
+window while using the app.
+
+### Step 7: Start the dashboard
+
+Open a **second** PowerShell window and run:
+
+```powershell
+cd "d:\social-intel-dashboard\dashboard"
+npm run dev
+```
+
+Open http://localhost:3000 in your browser. Enter a keyword and click
+**Scan**. If port 3000 is already being used, Next.js may show a different
+URL, such as http://localhost:3001; open the URL printed in the terminal.
+
+When no targets are supplied, the scraper uses public Google results for
+Facebook and Instagram. You can also provide specific public Facebook Page
+URLs or Instagram hashtags/profiles.
+
+### Step 8: Stop the app
+
+In each terminal running the app, press:
+
+```text
+Ctrl+C
+```
+
+Stop the dashboard and scraper separately. Your database records remain in
+PostgreSQL when the services are stopped.
+
+### Common problems
+
+- **`node` or `npm` is not recognized**: install Node.js, close PowerShell,
+  open a new PowerShell window, and try again.
+- **`createdb` or `psql` is not recognized**: add PostgreSQL's `bin` folder to
+  your Windows PATH, or run the commands from the PostgreSQL SQL Shell.
+- **`password authentication failed`**: fix the PostgreSQL password or update
+  `DATABASE_URL` in both `.env` files.
+- **`database "social_intel" does not exist`**: repeat Step 3.
+- **`EADDRINUSE` or port already in use**: another copy is running. Close it
+  with `Ctrl+C`, or use the alternate URL printed by Next.js.
+- **The scan returns no results**: Facebook and Instagram limit logged-out
+  visitors. Try a known public Page/profile, verify `SERPAPI_KEY`, and wait
+  for the scan to finish.
+- **Never-ending browser errors**: run
+  `npx playwright install chromium` from the `scraper` folder again.
 
 ## How a "scan" flows
 
