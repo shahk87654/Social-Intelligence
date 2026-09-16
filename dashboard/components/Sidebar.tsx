@@ -1,14 +1,24 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const links = [
   { href: "/", label: "Overview", icon: "▦" },
+  { href: "/projects", label: "Projects", icon: "◇" },
+  { href: "/history", label: "Scan history", icon: "↺" },
+  { href: "/search", label: "Global search", icon: "⌕" },
+  { href: "/team", label: "Team", icon: "♧" },
   { href: "/reports", label: "Reports", icon: "↗" },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function signOut() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
+  }
 
   return (
     <aside className="border-b border-slate-200 bg-white/90 px-4 py-5 backdrop-blur-xl lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-64 lg:flex-col lg:border-b-0 lg:border-r lg:px-5 lg:py-7">
@@ -55,6 +65,9 @@ export default function Sidebar() {
           Search, organize, and deliver intelligence from the public web.
         </p>
       </div>
+      <button type="button" onClick={signOut} className="mt-4 rounded-xl px-3 py-2 text-left text-xs font-semibold text-slate-500 transition hover:bg-red-50 hover:text-red-700">
+        Sign out
+      </button>
     </aside>
   );
 }

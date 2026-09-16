@@ -193,6 +193,21 @@ PostgreSQL when the services are stopped.
 
 ## Scheduled reports
 
+## Accounts and Phase 1 workspace features
+
+The dashboard now starts with a private account and workspace flow:
+
+- Create an account at `http://localhost:3000/signup`
+- Sign in at `http://localhost:3000/login`
+- Use **Projects** to save reusable monitoring briefs
+- Use **Scan history** to review previous scans
+- Open any source author from the overview to view its post detail page
+- Use **Global search** to search mentions, projects, and generated reports
+
+The Phase 1 account schema creates an organization and admin membership for
+each new account. Team invitations and additional member management are
+reserved for the next collaboration phase.
+
 The dashboard includes a full Reports workspace at
 `http://localhost:3000/reports`. From there you can create a schedule with a
 recipient email, keyword scope, and platform filter. The first delivery is due

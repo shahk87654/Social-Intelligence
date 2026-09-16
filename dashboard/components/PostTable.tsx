@@ -54,7 +54,7 @@ export default function PostTable({ posts, loading }: { posts: Post[]; loading: 
                 </span>
               </td>
               <td className="px-3 py-3 whitespace-nowrap font-medium text-slate-700">
-                <div>{p.author_name || "Unknown source"}</div>
+                <a href={`/posts/${p.id}`} className="hover:text-blue-600 hover:underline">{p.author_name || "Unknown source"}</a>
                 {p.group_name && <div className="text-[11px] font-normal text-slate-400">Group: {p.group_name}</div>}
               </td>
               <td className="max-w-md truncate px-3 py-3 text-slate-600" title={p.content || ""}>
