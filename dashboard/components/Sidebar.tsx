@@ -8,6 +8,7 @@ const links = [
   { href: "/history", label: "Scan history", icon: "↺" },
   { href: "/search", label: "Global search", icon: "⌕" },
   { href: "/team", label: "Team", icon: "♧" },
+  { href: "/alerts", label: "Alerts", icon: "!" },
   { href: "/reports", label: "Reports", icon: "↗" },
 ];
 

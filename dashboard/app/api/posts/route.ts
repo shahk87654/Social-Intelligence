@@ -47,7 +47,8 @@ export async function GET(req: NextRequest) {
     params.push((page - 1) * pageSize);
     const dataResult = await pool.query(
      `SELECT id, platform, post_url, author_name, author_url, group_name, group_url, content, matched_keyword,
-             post_date, likes, comments, shares, scraped_at
+             post_date, likes, comments, shares, scraped_at, sentiment, sentiment_score,
+             is_duplicate, is_spam, source_quality_score, tags, note, assigned_to
       FROM posts
       ${whereClause}
       ORDER BY ${sortCol} ${order} NULLS LAST

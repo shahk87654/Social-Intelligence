@@ -1,7 +1,49 @@
 import pg from "pg";
 import "dotenv/config";
+import crypto from "node:crypto";
 
 export const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+
+const positiveWords = ["good", "great", "excellent", "love", "success", "win", "helpful", "happy", "positive"];
+const negativeWords = ["bad", "hate", "terrible", "angry", "scam", "fraud", "broken", "negative", "complaint", "problem"];
+
+function tokens(content) {
+  return String(content || "").toLowerCase();
+}
+
+function classifySentiment(content) {
+  const text = tokens(content);
+  const positive = positiveWords.filter((word) => text.includes(word)).length;
+  const negative = negativeWords.filter((word) => text.includes(word)).length;
+  return negative > positive ? "negative" : positive > negative ? "positive" : "neutral";
+}
+
+function sentimentScore(content) {
+  const text = tokens(content);
+  const positive = positiveWords.filter((word) => text.includes(word)).length;
+  const negative = negativeWords.filter((word) => text.includes(word)).length;
+  return Math.max(-1, Math.min(1, (positive - negative) / 5));
+}
+
+function isSpam(content) {
+  const text = tokens(content);
+  return text.length > 0 && (text.includes("buy now") || text.includes("click here") || text.includes("limited offer"));
+}
+
+function sourceQuality(post) {
+  const engagement = Number(post.likes || 0) + Number(post.comments || 0) * 2 + Number(post.shares || 0) * 3;
+  return Math.max(10, Math.min(100, 40 + Math.min(35, Math.round(Math.log10(engagement + 1) * 12)) + (post.authorName ? 15 : 0) + (post.postUrl ? 10 : 0)));
+}
+
+function contentFingerprint(post) {
+  const normalized = `${post.authorName || ""}|${post.content || ""}`
+    .toLowerCase()
+    .replace(/https?:\/\/\S+/g, "")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return normalized.length >= 40 ? crypto.createHash("sha256").update(normalized).digest("hex") : null;
+}
 
 export async function createScanRun(keyword, platforms) {
   const { rows } = await pool.query(
@@ -18,6 +60,53 @@ export async function finishScanRun(id, { status, error = null, postsFound = 0 }
   );
 }
 
+export async function evaluateAlerts(keyword, status, postsFound = 0) {
+  const { rows: rules } = await pool.query(
+    `SELECT id, organization_id, name, rule_type, keyword, threshold
+     FROM alert_rules WHERE enabled = true`
+  );
+  for (const rule of rules) {
+    if (rule.keyword && !keyword.toLowerCase().includes(String(rule.keyword).toLowerCase())) continue;
+    let shouldAlert = false;
+    let message = "";
+    let severity = "info";
+    if (rule.rule_type === "scan_failure" && status === "failed") {
+      shouldAlert = true;
+      message = `The scan for "${keyword}" failed.`;
+      severity = "critical";
+    } else if (rule.rule_type === "new_mention" && postsFound > 0) {
+      shouldAlert = true;
+      message = `${postsFound} new mention${postsFound === 1 ? "" : "s"} found for "${keyword}".`;
+    } else if (rule.rule_type === "volume_spike" && postsFound >= (rule.threshold || 10)) {
+      shouldAlert = true;
+      message = `${postsFound} mentions found for "${keyword}", above the configured threshold.`;
+      severity = "warning";
+    } else if (rule.rule_type === "negative_sentiment") {
+      const negative = await pool.query(
+        `SELECT COUNT(*)::int AS count FROM posts
+         WHERE sentiment = 'negative' AND scraped_at >= now() - interval '24 hours'
+         AND ($1::text IS NULL OR matched_keyword ILIKE '%' || $1 || '%')`,
+        [rule.keyword]
+      );
+      if (negative.rows[0].count >= (rule.threshold || 1)) {
+        shouldAlert = true;
+        message = `${negative.rows[0].count} negative mention${negative.rows[0].count === 1 ? "" : "s"} detected in the last 24 hours.`;
+        severity = "critical";
+      }
+    }
+    if (shouldAlert) {
+      await pool.query(
+        `INSERT INTO alerts (organization_id, rule_id, title, message, severity)
+         SELECT $1, $2, $3, $4, $5
+         WHERE NOT EXISTS (
+           SELECT 1 FROM alerts WHERE organization_id = $1 AND rule_id = $2 AND message = $4 AND created_at >= now() - interval '1 hour'
+         )`,
+        [rule.organization_id, rule.id, rule.name, message, severity]
+      );
+    }
+  }
+}
+
 // Upsert on (platform, post_url) so re-scanning doesn't duplicate rows;
 // engagement counts are refreshed on conflict since they change over time.
 export async function upsertPosts(scanRunId, keyword, posts) {
@@ -25,11 +114,19 @@ export async function upsertPosts(scanRunId, keyword, posts) {
   for (const p of posts) {
     const parsedDate = p.postDate ? new Date(String(p.postDate).replace(/[\u200e\u200f\u202a-\u202e]/g, "")) : null;
     const postDate = parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate.toISOString() : null;
+    const fingerprint = contentFingerprint(p);
+    const duplicate = fingerprint
+      ? (await pool.query(
+          "SELECT EXISTS (SELECT 1 FROM posts WHERE content_fingerprint = $1 AND post_url <> $2) AS duplicate",
+          [fingerprint, p.postUrl]
+        )).rows[0].duplicate
+      : false;
     await pool.query(
       `INSERT INTO posts
          (scan_run_id, platform, post_url, author_name, author_url, group_name, group_url, content,
-          matched_keyword, post_date, likes, comments, shares)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+          matched_keyword, post_date, likes, comments, shares, sentiment, sentiment_score,
+          is_duplicate, is_spam, source_quality_score, content_fingerprint)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19)
        ON CONFLICT (platform, post_url) DO UPDATE SET
          likes = EXCLUDED.likes,
          comments = EXCLUDED.comments,
@@ -37,6 +134,12 @@ export async function upsertPosts(scanRunId, keyword, posts) {
          group_name = EXCLUDED.group_name,
          group_url = EXCLUDED.group_url,
          content = EXCLUDED.content,
+         sentiment = EXCLUDED.sentiment,
+         sentiment_score = EXCLUDED.sentiment_score,
+         is_duplicate = EXCLUDED.is_duplicate,
+         is_spam = EXCLUDED.is_spam,
+         source_quality_score = EXCLUDED.source_quality_score,
+         content_fingerprint = EXCLUDED.content_fingerprint,
          scraped_at = now()`,
       [
         scanRunId,
@@ -52,10 +155,17 @@ export async function upsertPosts(scanRunId, keyword, posts) {
         p.likes ?? null,
         p.comments ?? null,
         p.shares ?? null,
+        classifySentiment(p.content),
+        sentimentScore(p.content),
+        duplicate,
+        isSpam(p.content),
+        sourceQuality(p),
+        fingerprint,
       ]
     );
     count++;
   }
+
   return count;
 }
 

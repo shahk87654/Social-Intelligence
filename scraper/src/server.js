@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import { chromium } from "playwright";
-import { createScanRun, finishScanRun, reserveSerpSearches, upsertPosts } from "./db.js";
+import { createScanRun, evaluateAlerts, finishScanRun, reserveSerpSearches, upsertPosts } from "./db.js";
 import * as facebook from "./scrapers/facebook.js";
 import * as instagram from "./scrapers/instagram.js";
 import * as google from "./scrapers/google.js";
@@ -47,7 +47,10 @@ app.post("/scrape", async (req, res) => {
 
   runScan(scanRunId, keyword, requestedPlatforms, targets).catch((err) => {
     console.error("scan failed:", err);
-    finishScanRun(scanRunId, { status: "failed", error: err.message });
+    Promise.all([
+      finishScanRun(scanRunId, { status: "failed", error: err.message }),
+      evaluateAlerts(keyword, "failed", 0),
+    ]).catch((alertError) => console.error("failed to record scan failure alert:", alertError));
   });
 });
 
@@ -113,6 +116,7 @@ async function runScan(scanRunId, keyword, platforms, targets) {
       }
     }
     await finishScanRun(scanRunId, { status: "completed", postsFound: totalFound });
+    await evaluateAlerts(keyword, "completed", totalFound);
   } finally {
     if (browser) await browser.close();
   }

@@ -4,6 +4,8 @@ type Stats = {
   totals: { total_posts: number };
   byPlatform: { platform: string; count: number }[];
   topKeywords: { matched_keyword: string; count: number }[];
+  sentiment?: { sentiment: string; count: number }[];
+  trend?: { day: string; mentions: number; likes: number; comments: number; shares: number }[];
 };
 
 const colors: Record<string, string> = {
@@ -17,6 +19,8 @@ export default function AnalyticsCharts({ stats }: { stats: Stats | null }) {
   if (!stats) return null;
   const total = Math.max(stats.totals.total_posts, 1);
   const platforms = stats.byPlatform.filter((item) => item.count > 0);
+  const sentiment = stats.sentiment || [];
+  const trend = stats.trend || [];
   const topCount = Math.max(...stats.topKeywords.map((item) => item.count), 1);
   let offset = 0;
 
@@ -94,6 +98,30 @@ export default function AnalyticsCharts({ stats }: { stats: Stats | null }) {
               </div>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="hq-card p-5 sm:p-6">
+        <p className="eyebrow">Conversation mood</p>
+        <h2 className="mt-1 text-lg font-semibold text-slate-900">Sentiment distribution</h2>
+        <div className="mt-5 space-y-3">
+          {sentiment.length === 0 && <p className="text-sm text-slate-400">Sentiment data will appear after the next scan.</p>}
+          {sentiment.map((item) => (
+            <div key={item.sentiment} className="flex items-center gap-3">
+              <span className={`h-2.5 w-2.5 rounded-full ${item.sentiment === "positive" ? "bg-emerald-500" : item.sentiment === "negative" ? "bg-red-500" : "bg-slate-400"}`} />
+              <span className="w-20 text-sm capitalize text-slate-600">{item.sentiment}</span>
+              <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100"><div className={`h-full rounded-full ${item.sentiment === "positive" ? "bg-emerald-500" : item.sentiment === "negative" ? "bg-red-500" : "bg-slate-400"}`} style={{ width: `${(item.count / Math.max(stats.totals.total_posts, 1)) * 100}%` }} /></div>
+              <strong className="w-10 text-right text-sm text-slate-700">{item.count}</strong>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="hq-card p-5 sm:p-6 lg:col-span-2">
+        <div className="flex items-start justify-between"><div><p className="eyebrow">Last 30 days</p><h2 className="mt-1 text-lg font-semibold text-slate-900">Mention volume</h2></div><span className="text-xs text-slate-400">{trend.length} active days</span></div>
+        <div className="mt-6 flex h-40 items-end gap-1.5">
+          {trend.length === 0 && <p className="text-sm text-slate-400">Trend data will appear after sources are collected.</p>}
+          {trend.map((item) => <div key={item.day} className="group flex h-full flex-1 flex-col justify-end"><div className="relative min-h-1 rounded-t-md bg-gradient-to-t from-blue-600 to-violet-400" style={{ height: `${Math.max(4, (item.mentions / Math.max(...trend.map((point) => point.mentions), 1)) * 100)}%` }} title={`${item.mentions} mentions`} /><span className="mt-2 hidden text-center text-[9px] text-slate-400 group-hover:block">{new Date(item.day).toLocaleDateString([], { month: "short", day: "numeric" })}</span></div>)}
         </div>
       </section>
     </div>

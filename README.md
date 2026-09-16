@@ -208,6 +208,23 @@ The Phase 1 account schema creates an organization and admin membership for
 each new account. Team invitations and additional member management are
 reserved for the next collaboration phase.
 
+## Phase 2 intelligence features
+
+Phase 2 adds local intelligence processing and team workflows:
+
+- Sentiment classification for collected posts
+- Source quality scoring
+- Spam and duplicate indicators
+- Tags and private notes on mention detail pages
+- 30-day mention volume trends
+- Sentiment distribution analytics
+- Alert rules for negative sentiment, new mentions, volume spikes, and scan failures
+- In-app alerts at `http://localhost:3000/alerts`
+
+Sentiment and quality scoring run inside the scraper service using the collected
+content; no post content is sent to an external AI provider. Apply the updated
+schema with `psql social_intel -f db\schema.sql` before starting new scans.
+
 The dashboard includes a full Reports workspace at
 `http://localhost:3000/reports`. From there you can create a schedule with a
 recipient email, keyword scope, and platform filter. The first delivery is due

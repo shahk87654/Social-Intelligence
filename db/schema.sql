@@ -43,6 +43,14 @@ CREATE TABLE IF NOT EXISTS posts (
 
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS group_name TEXT;
 ALTER TABLE posts ADD COLUMN IF NOT EXISTS group_url TEXT;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS sentiment TEXT NOT NULL DEFAULT 'neutral';
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS sentiment_score NUMERIC(5, 4) NOT NULL DEFAULT 0;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS is_duplicate BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS is_spam BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS source_quality_score INTEGER NOT NULL DEFAULT 50;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS content_fingerprint TEXT;
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS tags TEXT[] NOT NULL DEFAULT '{}';
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS note TEXT;
 
 DO $$
 BEGIN
@@ -57,6 +65,10 @@ CREATE INDEX IF NOT EXISTS idx_posts_platform ON posts(platform);
 CREATE INDEX IF NOT EXISTS idx_posts_date ON posts(post_date);
 CREATE INDEX IF NOT EXISTS idx_posts_keyword ON posts(matched_keyword);
 CREATE INDEX IF NOT EXISTS idx_posts_content_trgm ON posts USING GIN (to_tsvector('english', coalesce(content, '')));
+CREATE INDEX IF NOT EXISTS idx_posts_sentiment ON posts(sentiment);
+CREATE INDEX IF NOT EXISTS idx_posts_tags ON posts USING GIN(tags);
+CREATE INDEX IF NOT EXISTS idx_posts_content_fingerprint ON posts(content_fingerprint);
+
 
 CREATE TABLE IF NOT EXISTS report_schedules (
     id              SERIAL PRIMARY KEY,
@@ -146,3 +158,30 @@ CREATE TABLE IF NOT EXISTS organization_invites (
 
 CREATE INDEX IF NOT EXISTS idx_sessions_expiry ON sessions(expires_at);
 CREATE INDEX IF NOT EXISTS idx_projects_org ON monitoring_projects(organization_id);
+
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS assigned_to INTEGER REFERENCES users(id) ON DELETE SET NULL;
+
+CREATE TABLE IF NOT EXISTS alert_rules (
+    id              SERIAL PRIMARY KEY,
+    organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    name            TEXT NOT NULL,
+    rule_type       TEXT NOT NULL CHECK (rule_type IN ('new_mention', 'negative_sentiment', 'volume_spike', 'scan_failure')),
+    keyword        TEXT,
+    threshold      INTEGER,
+    enabled         BOOLEAN NOT NULL DEFAULT true,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS alerts (
+    id              SERIAL PRIMARY KEY,
+    organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    rule_id         INTEGER REFERENCES alert_rules(id) ON DELETE SET NULL,
+    title           TEXT NOT NULL,
+    message         TEXT NOT NULL,
+    severity        TEXT NOT NULL DEFAULT 'info' CHECK (severity IN ('info', 'warning', 'critical')),
+    read_at         TIMESTAMPTZ,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_alert_rules_org ON alert_rules(organization_id, enabled);
+CREATE INDEX IF NOT EXISTS idx_alerts_org ON alerts(organization_id, created_at DESC);
