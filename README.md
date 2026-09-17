@@ -317,18 +317,48 @@ PostgreSQL when the services are stopped.
 - **Never-ending browser errors**: run
   `npx playwright install chromium` from the `scraper` folder again.
 
-## Scheduled reports
+## Phase 3 platform integrations
 
-## Phase 3 integrations
+Phase 3 turns the monitoring workspace into an operational platform.
 
-Phase 3 adds:
+### Workspace configuration
 
-- Keyword comparison at `/comparison`
-- Configurable dashboard widgets at `/settings`
-- Organization API keys and webhook registration at `/integrations`
-- Read-only API access at `/api/v1/posts` using `Authorization: Bearer <key>`
+- Compare keyword or project coverage at `/comparison`.
+- Configure dashboard widget visibility and light/dark theme preferences at
+  `/settings`.
+- Save organization-owned SerpAPI and Resend credentials from Settings. They
+  are encrypted at rest with `INTEGRATION_ENCRYPTION_KEY` and never returned
+  to the browser.
 
-API keys and webhook secrets are shown only when created. Store them securely.
+### API access
+
+- Create organization-scoped API keys at `/integrations`.
+- Only the SHA-256 hash and display prefix are stored after creation.
+- The full key is shown once; store it in a secret manager immediately.
+- Call `GET /api/v1/posts` with `Authorization: Bearer <api-key>`.
+- API responses remain scoped to the organization that owns the key.
+
+### Signed webhooks
+
+- Register webhooks and select supported events at `/integrations`.
+- Deliveries include an HMAC-SHA256 `x-webhook-signature` header.
+- Destinations must use HTTPS and resolve only to public addresses.
+- Localhost, loopback, private, link-local, multicast, reserved, and cloud
+  metadata destinations are rejected at registration and delivery time.
+- Webhook secrets are shown only at creation time.
+
+### Scheduled reports and email delivery
+
+- Create schedules at `/reports` with recipient, CC, keyword, platform,
+  timezone, frequency, format, subject, and message settings.
+- Generate PDF or CSV reports and download them only through authenticated,
+  organization-scoped report access.
+- Run the separate report worker with `REPORT_WORKER_SECRET`.
+- Deliver reports with the organization's encrypted Resend credential.
+
+Keep API keys, integration credentials, webhook secrets, worker secrets, and
+database credentials out of Git, README files, screenshots, and issue
+discussions.
 
 ## Accounts and Phase 1 workspace features
 
