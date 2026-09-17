@@ -9,7 +9,8 @@ export async function GET() {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
     const result = await pool.query("SELECT widgets FROM dashboard_preferences WHERE user_id = $1", [user.id]);
-    return NextResponse.json({ widgets: result.rows[0]?.widgets || { stats: true, analytics: true, mentions: true } });
+    const widgets = result.rows[0]?.widgets || { stats: true, analytics: true, mentions: true };
+    return NextResponse.json({ widgets, theme: widgets.theme === "dark" ? "dark" : "light" });
   } catch (error) {
     console.error("Failed to load dashboard preferences", error);
     return NextResponse.json({ error: "Unable to load dashboard preferences." }, { status: 503 });
@@ -22,7 +23,7 @@ export async function PUT(req: Request) {
     if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
     const body = await req.json();
     const allowed = ["stats", "analytics", "mentions", "scan", "sources"];
-    const widgets = Object.fromEntries(allowed.map((key) => [key, body.widgets?.[key] !== false]));
+    const widgets = { ...Object.fromEntries(allowed.map((key) => [key, body.widgets?.[key] !== false])), theme: body.theme === "dark" ? "dark" : "light" };
     await pool.query(
       `INSERT INTO dashboard_preferences (user_id, widgets) VALUES ($1, $2)
        ON CONFLICT (user_id) DO UPDATE SET widgets = EXCLUDED.widgets, updated_at = now()`,

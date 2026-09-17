@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { pool } from "@/lib/db";
+import { deleteIntegrationKey, saveIntegrationKey } from "@/lib/integrations";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,11 @@ export async function GET() {
       pool.query("SELECT id, name, key_prefix, last_used_at, created_at FROM api_keys WHERE organization_id = $1 ORDER BY created_at DESC", [user.organization_id]),
       pool.query("SELECT id, name, endpoint_url, events, enabled, created_at FROM webhooks WHERE organization_id = $1 ORDER BY created_at DESC", [user.organization_id]),
     ]);
-    return NextResponse.json({ keys: keys.rows, webhooks: webhooks.rows });
+    const credentials = await pool.query(
+      "SELECT provider, updated_at FROM organization_integrations WHERE organization_id = $1 ORDER BY provider",
+      [user.organization_id]
+    );
+    return NextResponse.json({ keys: keys.rows, webhooks: webhooks.rows, credentials: credentials.rows });
   } catch (error) {
     console.error("Failed to load integrations", error);
     return NextResponse.json({ error: "Unable to load integrations." }, { status: 503 });
@@ -25,6 +30,13 @@ export async function POST(req: Request) {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
     const body = await req.json();
+    if (body.type === "credential") {
+      const provider = body.provider === "resend" || body.provider === "serpapi" ? body.provider : null;
+      const value = typeof body.value === "string" ? body.value.trim() : "";
+      if (!provider || !value) return NextResponse.json({ error: "A supported provider and API key are required." }, { status: 400 });
+      await saveIntegrationKey(user.organization_id, provider, value);
+      return NextResponse.json({ provider, configured: true }, { status: 201 });
+    }
     const type = body.type === "webhook" ? "webhook" : "key";
     if (type === "key") {
       const name = typeof body.name === "string" ? body.name.trim() : "";
@@ -53,6 +65,11 @@ export async function DELETE(req: Request) {
     const url = new URL(req.url);
     const type = url.searchParams.get("type");
     const id = Number(url.searchParams.get("id"));
+    const provider = url.searchParams.get("provider");
+    if (provider === "resend" || provider === "serpapi") {
+      await deleteIntegrationKey(user.organization_id, provider);
+      return NextResponse.json({ deleted: true });
+    }
     const table = type === "webhook" ? "webhooks" : "api_keys";
     const result = await pool.query(`DELETE FROM ${table} WHERE id = $1 AND organization_id = $2`, [id, user.organization_id]);
     if (!result.rowCount) return NextResponse.json({ error: "Integration not found." }, { status: 404 });

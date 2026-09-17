@@ -2,6 +2,7 @@ import { randomBytes } from "crypto";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { pool } from "@/lib/db";
+import { getIntegrationKey } from "@/lib/integrations";
 
 export const dynamic = "force-dynamic";
 
@@ -38,13 +39,14 @@ export async function POST(req: Request) {
     );
     const appUrl = process.env.APP_URL || "http://localhost:3000";
     const inviteUrl = `${appUrl}/signup?invite=${token}`;
-    if (process.env.RESEND_API_KEY && process.env.REPORT_FROM_EMAIL) {
+    const resendApiKey = await getIntegrationKey(user.organization_id, "resend");
+    if (resendApiKey && process.env.REPORT_FROM_EMAIL) {
       const resend = await import("resend");
-      const client = new resend.Resend(process.env.RESEND_API_KEY);
+      const client = new resend.Resend(resendApiKey);
       const result = await client.emails.send({ from: process.env.REPORT_FROM_EMAIL, to: email, subject: `Join ${user.organization_name} on Signal / Intel`, text: `You have been invited to join ${user.organization_name}. Accept your invitation: ${inviteUrl}` });
       if (result.error) throw new Error(result.error.message);
     }
-    return NextResponse.json({ invited: true, inviteUrl, emailSent: Boolean(process.env.RESEND_API_KEY && process.env.REPORT_FROM_EMAIL) }, { status: 201 });
+    return NextResponse.json({ invited: true, inviteUrl, emailSent: Boolean(resendApiKey && process.env.REPORT_FROM_EMAIL) }, { status: 201 });
   } catch (error) {
     console.error("Failed to invite team member", error);
     return NextResponse.json({ error: "Unable to create team invitation." }, { status: 503 });

@@ -49,8 +49,8 @@ function addResults(found, seen, results, expectedPlatform) {
  * results. SerpAPI handles the search-engine interaction; this service only
  * consumes the returned public links and snippets.
  */
-export async function search(keyword, platforms) {
-  const apiKey = process.env.SERPAPI_KEY;
+export async function search(keyword, platforms, providedApiKey) {
+  const apiKey = providedApiKey || process.env.SERPAPI_KEY;
   if (!apiKey) throw new Error("SERPAPI_KEY is not configured");
 
   const found = [];

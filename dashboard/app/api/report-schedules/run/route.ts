@@ -29,7 +29,7 @@ async function runSchedule(schedule: {
   const fileData = Buffer.from(await response.arrayBuffer());
   const extension = schedule.report_format === "csv" ? "csv" : "pdf";
   const fileName = `signal-intel-${new Date().toISOString().slice(0, 10)}.${extension}`;
-  const { sendReport } = createMailer();
+  const { sendReport } = await createMailer(schedule.organization_id);
   await sendReport(
     schedule.recipients?.length ? schedule.recipients : [schedule.recipient_email],
     schedule.email_subject || `Signal / Intel report${schedule.keyword ? ` — ${schedule.keyword}` : ""}`,

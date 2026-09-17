@@ -10,6 +10,14 @@ body {
   color: #0f172a;
 }
 
+html.dark body {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.18), transparent 30rem),
+    radial-gradient(circle at 90% 12%, rgba(14, 165, 233, 0.1), transparent 26rem),
+    #0b1220;
+  color: #e2e8f0;
+}
+
 ::selection {
   background: rgba(59, 130, 246, 0.2);
 }
@@ -17,6 +25,11 @@ body {
 @layer components {
   .panel {
     @apply rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60;
+  }
+
+  html.dark .panel,
+  html.dark .hq-card {
+    @apply border-slate-700 bg-slate-900 shadow-black/20;
   }
 
   .hq-card {
@@ -49,7 +62,15 @@ body {
     @apply w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500/70 focus:bg-white focus:ring-2 focus:ring-blue-500/10;
   }
 
+  html.dark .field {
+    @apply border-slate-700 bg-slate-800 text-slate-100 placeholder:text-slate-500 focus:bg-slate-800;
+  }
+
   .select-field {
     @apply rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-600 outline-none transition focus:border-blue-500/70;
+  }
+
+  html.dark .select-field {
+    @apply border-slate-700 bg-slate-800 text-slate-200;
   }
 }

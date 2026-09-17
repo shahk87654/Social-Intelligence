@@ -19,7 +19,7 @@ const app = express();
 app.use(express.json());
 
 app.post("/scrape", async (req, res) => {
-  const { keyword, platforms, targets = {}, organizationId } = req.body || {};
+  const { keyword, platforms, targets = {}, organizationId, serpApiKey } = req.body || {};
 
   if (!keyword || typeof keyword !== "string" || !Number.isInteger(Number(organizationId))) {
     return res.status(400).json({ error: "keyword (string) is required" });
@@ -45,7 +45,7 @@ app.post("/scrape", async (req, res) => {
   // in the DB as they're found. Dashboard polls /api/posts + scan status.
   res.json({ scanRunId, status: "running" });
 
-  runScan(scanRunId, keyword, requestedPlatforms, targets, Number(organizationId)).catch((err) => {
+  runScan(scanRunId, keyword, requestedPlatforms, targets, Number(organizationId), serpApiKey).catch((err) => {
     console.error("scan failed:", err);
     Promise.all([
       finishScanRun(scanRunId, { status: "failed", error: err.message }),
@@ -70,7 +70,7 @@ app.get("/scan/:id", async (req, res) => {
   }
 });
 
-async function runScan(scanRunId, keyword, platforms, targets, organizationId) {
+async function runScan(scanRunId, keyword, platforms, targets, organizationId, serpApiKey) {
   const hasTargets = ["facebook", "instagram"].some((platform) => targets[platform]?.length);
   const browser = hasTargets ? await chromium.launch({ headless: true }) : null;
   let totalFound = 0;
@@ -92,7 +92,7 @@ async function runScan(scanRunId, keyword, platforms, targets, organizationId) {
           webNote = `Web discovery skipped because the SerpAPI monthly limit was reached (${monthlyLimit}).`;
         } else {
           try {
-            ({ posts: webPosts, note: webNote } = await google.search(keyword, webPlatforms));
+            ({ posts: webPosts, note: webNote } = await google.search(keyword, webPlatforms, serpApiKey));
           } catch (error) {
             if (!reviewRequested) throw error;
             webNote = `Web discovery unavailable: ${error.message}`;
@@ -103,6 +103,7 @@ async function runScan(scanRunId, keyword, platforms, targets, organizationId) {
         ? await reviews.search(keyword, {
             beforeRequest: reserveSearch,
             dataId: targets.google_review?.[0],
+            apiKey: serpApiKey,
           })
         : { posts: [], note: null };
       const posts = [...webPosts, ...reviewPosts];

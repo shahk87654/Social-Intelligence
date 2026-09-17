@@ -52,8 +52,8 @@ function parseReviewDate(dStr) {
  * Finds a Google Maps place and imports the public review pages exposed by
  * SerpAPI. Pagination is followed when available; API limits still apply.
  */
-export async function search(keyword, { beforeRequest, dataId } = {}) {
-  const apiKey = process.env.SERPAPI_KEY;
+export async function search(keyword, { beforeRequest, dataId, apiKey: providedApiKey } = {}) {
+  const apiKey = providedApiKey || process.env.SERPAPI_KEY;
   if (!apiKey) throw new Error("SERPAPI_KEY is not configured");
 
   const configuredDataId = dataId?.trim() || process.env.SERPAPI_GOOGLE_MAPS_DATA_ID?.trim();

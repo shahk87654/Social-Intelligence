@@ -1,11 +1,12 @@
 import { Resend } from "resend";
+import { getIntegrationKey } from "@/lib/integrations";
 
-export function createMailer() {
-  const apiKey = process.env.RESEND_API_KEY;
+export async function createMailer(organizationId?: number) {
+  const apiKey = organizationId ? await getIntegrationKey(organizationId, "resend") : process.env.RESEND_API_KEY;
   const from = process.env.REPORT_FROM_EMAIL;
 
   if (!apiKey || !from) {
-    throw new Error("RESEND_API_KEY and REPORT_FROM_EMAIL must be configured.");
+    throw new Error("A Resend API key and REPORT_FROM_EMAIL must be configured.");
   }
 
   const resend = new Resend(apiKey);

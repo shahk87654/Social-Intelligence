@@ -156,6 +156,14 @@ CREATE TABLE IF NOT EXISTS organizations (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS organization_integrations (
+    organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    provider       TEXT NOT NULL CHECK (provider IN ('resend', 'serpapi')),
+    encrypted_key  TEXT NOT NULL,
+    updated_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (organization_id, provider)
+);
+
 CREATE TABLE IF NOT EXISTS users (
     id            SERIAL PRIMARY KEY,
     email         TEXT NOT NULL UNIQUE,

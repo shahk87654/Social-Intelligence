@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { getIntegrationKey } from "@/lib/integrations";
 
 export async function POST(req: NextRequest) {
   try {
@@ -7,11 +8,13 @@ export async function POST(req: NextRequest) {
     if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
     const body = await req.json();
     const scraperUrl = process.env.SCRAPER_URL || "http://localhost:4000";
+    const serpApiKey = await getIntegrationKey(user.organization_id, "serpapi");
+    if (!serpApiKey) return NextResponse.json({ error: "Add your SerpAPI key in Settings before starting a scan." }, { status: 400 });
 
     const resp = await fetch(`${scraperUrl}/scrape`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...body, organizationId: user.organization_id }),
+      body: JSON.stringify({ ...body, organizationId: user.organization_id, serpApiKey }),
     });
     const text = await resp.text();
     let data: unknown;
