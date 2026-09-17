@@ -10,6 +10,31 @@ social-intel-dashboard/
 └── dashboard/        Next.js app (reads from DB, triggers scraper via HTTP)
 ```
 
+## Product snapshots
+
+The current interface is organized around a public marketing entry point,
+focused authentication flows, and a protected operations console.
+
+### Landing page
+
+![Signal / Intel landing page](docs/screenshots/landing.png)
+
+### Sign in
+
+![Signal / Intel sign-in page](docs/screenshots/login.png)
+
+### Create a workspace
+
+![Signal / Intel signup page](docs/screenshots/signup.png)
+
+### Protected dashboard entry
+
+![Signal / Intel dashboard entry](docs/screenshots/dashboard.png)
+
+The dashboard snapshot shows the protected-route entry state when no active
+session is present. Sign in to view the organization workspace and monitoring
+console.
+
 ## Read this before you run anything
 
 This project deliberately does **not** use logins, cookies from a real
