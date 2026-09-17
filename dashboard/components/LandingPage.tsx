@@ -12,6 +12,13 @@ const useCases = [
   ["Customer experience", "Surface recurring issues and high-value praise before they disappear into the feed."],
 ];
 
+const workflow = [
+  ["01", "Connect your sources", "Bring your own SerpAPI and Resend credentials, then configure the public platforms, keywords, and projects that matter to your team."],
+  ["02", "Launch a focused scan", "Search one topic or build a reusable monitoring brief. Narrow discovery with specific Facebook pages, Instagram targets, or source filters."],
+  ["03", "Read the operating picture", "Review coverage, sentiment, source quality, engagement, volume trends, duplicate signals, and the context behind every mention."],
+  ["04", "Move the work forward", "Create alerts, share reports, invite teammates, connect webhooks, or use the read-only API to bring intelligence into existing workflows."],
+];
+
 export default function LandingPage() {
   return (
     <main className="min-h-screen overflow-hidden bg-slate-950 text-white">
@@ -35,6 +42,13 @@ export default function LandingPage() {
 
       <section className="mx-auto max-w-7xl px-6 py-24 lg:px-8"><div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr]"><div><p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-400">One operating picture</p><h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">From public mentions to confident action.</h2></div><div className="grid gap-4 sm:grid-cols-3">{capabilities.map(([number, title, description]) => <div key={number} className="border-t border-white/15 pt-5"><div className="text-xs font-mono text-cyan-300">{number}</div><h3 className="mt-8 text-lg font-semibold">{title}</h3><p className="mt-3 text-sm leading-6 text-slate-400">{description}</p></div>)}</div></div></section>
 
+      <section className="border-y border-white/10 bg-slate-900/70">
+        <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
+          <div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">How it works</p><h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">A practical workflow from question to decision.</h2><p className="mt-5 text-base leading-7 text-slate-400">Start with the question your team needs answered. Signal / Intel keeps the collection, analysis, and follow-through in one auditable workspace.</p></div>
+          <div className="mt-14 grid gap-x-8 gap-y-12 md:grid-cols-2">{workflow.map(([number, title, description]) => <div key={number} className="relative border-l border-white/15 pl-7"><span className="absolute -left-3 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white ring-8 ring-slate-900">{number}</span><h3 className="text-xl font-semibold">{title}</h3><p className="mt-3 max-w-md text-sm leading-7 text-slate-400">{description}</p></div>)}</div>
+        </div>
+      </section>
+
       <section className="border-y border-white/10 bg-white/[0.03]">
         <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
           <div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">Built for the whole signal chain</p><h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">One workspace for every team that needs context.</h2><p className="mt-5 text-base leading-7 text-slate-400">Replace scattered screenshots, manual searches, and disconnected alerts with a shared operating picture that your team can inspect and act on.</p></div>
@@ -49,4 +63,5 @@ export default function LandingPage() {
       <footer className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-8 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between lg:px-8"><span>© 2026 Signal / Intel</span><div className="flex gap-5"><Link href="/privacy" className="transition hover:text-white">Privacy</Link><Link href="/terms" className="transition hover:text-white">Terms</Link><Link href="/login" className="transition hover:text-white">Sign in</Link></div></footer>
     </main>
   );
+
 }
