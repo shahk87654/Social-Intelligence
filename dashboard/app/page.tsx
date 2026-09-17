@@ -182,14 +182,14 @@ export default function DashboardPage() {
             <span className="h-2 w-2 rounded-full bg-blue-400 shadow-lg shadow-blue-400/50" />
             Command center
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Social listening headquarters</h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-500">
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-4xl">Social listening headquarters</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
             Search public web results and organize mentions across social platforms, articles, and websites.
           </p>
         </div>
         <div className="text-left text-xs text-slate-400 sm:text-right">
-          <div className="font-medium text-slate-700">HQ STATUS</div>
-          <div className="mt-1">Public sources only · SerpAPI</div>
+          <div className="font-bold tracking-[0.16em] text-slate-700 dark:text-slate-300">HQ STATUS</div>
+          <div className="mt-1 text-cyan-600 dark:text-cyan-300">Public sources only · SerpAPI</div>
         </div>
       </header>
       {apiError && (
@@ -198,14 +198,14 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <section className="panel gradient-border relative mb-8 overflow-hidden p-5 sm:p-7">
+      <section className="panel gradient-border relative mb-8 overflow-hidden border-blue-200/70 p-5 sm:p-7 dark:border-blue-900/70">
         <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-blue-500/10 blur-3xl" />
         <div className="relative">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-600">New intelligence query</div>
-                <h2 className="text-lg font-semibold tracking-tight text-slate-900">Find signals across the public web</h2>
-                <p className="mt-1 text-xs text-slate-500">Use a keyword to find relevant public sources.</p>
+                <h2 className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">Find signals across the public web</h2>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Use a keyword to find relevant public sources.</p>
           </div>
           {scanning && <span className="rounded-full bg-blue-50 px-3 py-1 text-xs text-blue-700">Scanning</span>}
         </div>
@@ -229,15 +229,15 @@ export default function DashboardPage() {
             onChange={(e) => setIgTargets(e.target.value)}
           />
         </div>
-        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Platforms</span>
+        <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 dark:border-slate-700 dark:bg-slate-800/50">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Platforms</span>
           {[
             ["facebook", "Facebook"],
             ["instagram", "Instagram"],
             ["article", "Articles"],
             ["website", "Websites"],
           ].map(([value, label]) => (
-            <label key={value} className="inline-flex items-center gap-2 text-sm text-slate-700">
+            <label key={value} className="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
               <input
                 type="checkbox"
                 checked={selectedPlatforms.includes(value)}
@@ -259,7 +259,7 @@ export default function DashboardPage() {
           <button
             onClick={runScan}
             disabled={scanning || !keyword.trim()}
-            className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-violet-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:from-blue-400 hover:to-violet-400 disabled:cursor-not-allowed disabled:opacity-40"
+            className="group inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-slate-950 dark:hover:bg-cyan-100"
           >
             {scanning ? "Scanning…" : "Scan"}
             {!scanning && <span className="transition-transform group-hover:translate-x-0.5">→</span>}

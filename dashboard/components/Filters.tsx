@@ -15,7 +15,7 @@ export default function Filters({
   onChange: (f: FilterState) => void;
 }) {
   return (
-    <div className="hq-card mb-4 flex flex-wrap items-center gap-3 p-3">
+    <div className="hq-card mb-4 flex flex-wrap items-center gap-2 border-slate-200 bg-slate-50/60 p-2.5 dark:border-slate-700 dark:bg-slate-900/60">
       <input
         className="field w-full md:w-72"
         placeholder="Search content or author..."

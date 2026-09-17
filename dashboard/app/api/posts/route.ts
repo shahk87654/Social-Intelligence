@@ -70,16 +70,24 @@ export async function GET(req: NextRequest) {
 }
 
 export async function DELETE() {
+  let client;
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
-    await pool.query("DELETE FROM posts WHERE organization_id = $1; DELETE FROM scan_runs WHERE organization_id = $1", [user.organization_id]);
+    client = await pool.connect();
+    await client.query("BEGIN");
+    await client.query("DELETE FROM posts WHERE organization_id = $1", [user.organization_id]);
+    await client.query("DELETE FROM scan_runs WHERE organization_id = $1", [user.organization_id]);
+    await client.query("COMMIT");
     return NextResponse.json({ success: true, cleared: true });
   } catch (error) {
+    if (client) await client.query("ROLLBACK").catch(() => undefined);
     console.error("Failed to clear records", error);
     return NextResponse.json(
       { error: "Database unavailable. Start PostgreSQL and initialize db/schema.sql." },
       { status: 503 }
     );
+  } finally {
+    client?.release();
   }
 }

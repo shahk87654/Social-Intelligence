@@ -25,23 +25,24 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="border-b border-slate-200 bg-white/90 px-4 py-5 backdrop-blur-xl lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-64 lg:flex-col lg:border-b-0 lg:border-r lg:px-5 lg:py-7">
+    <aside className="border-b border-slate-200/70 bg-white/75 px-4 py-5 backdrop-blur-2xl lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-64 lg:flex-col lg:border-b-0 lg:border-r lg:border-slate-200/60 lg:px-6 lg:py-7 dark:border-slate-800/80 dark:bg-slate-950/70">
       <a href="/" className="flex items-center gap-3 px-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-violet-600 text-sm font-black text-white shadow-lg shadow-blue-500/20">
-          SI
+        <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-slate-950 text-sm font-black text-white shadow-lg shadow-blue-500/20 dark:bg-white dark:text-slate-950">
+          <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-cyan-400 ring-4 ring-white dark:ring-slate-950" />SI
         </div>
         <div>
-          <div className="text-sm font-semibold tracking-tight text-slate-900">Signal / Intel</div>
+          <div className="text-sm font-semibold tracking-tight text-slate-900 dark:text-white">Signal / Intel</div>
           <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">HQ research console</div>
         </div>
       </a>
 
-      <div className="mt-8 flex items-center gap-2 px-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+      <div className="mt-8 flex items-center gap-2 border-y border-slate-200/70 px-2 py-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400 dark:border-slate-800">
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40" />
         Systems operational
       </div>
 
-      <nav className="mt-4 flex gap-2 overflow-x-auto lg:flex-col">
+      <div className="mt-6 px-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">Workspace</div>
+      <nav className="mt-2 flex gap-1 overflow-x-auto lg:flex-col">
         {links.map((link) => {
           const active = pathname === link.href;
           return (
@@ -50,11 +51,11 @@ export default function Sidebar() {
               href={link.href}
               className={`flex min-w-fit items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${
                 active
-                  ? "bg-blue-50 text-blue-700 shadow-sm shadow-blue-100"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                  ? "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:ring-blue-900"
+                  : "text-slate-500 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/70 dark:hover:text-white"
               }`}
             >
-              <span className={`flex h-7 w-7 items-center justify-center rounded-lg text-base ${active ? "bg-white text-blue-600" : "bg-slate-100 text-slate-400"}`}>
+              <span className={`flex h-7 w-7 items-center justify-center rounded-md text-sm ${active ? "bg-white text-blue-600 dark:bg-slate-900 dark:text-blue-400" : "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500"}`}>
                 {link.icon}
               </span>
               {link.label}
@@ -63,8 +64,8 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div className="mt-auto hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-violet-50 p-4 lg:block">
-        <div className="text-xs font-semibold text-slate-800">Public-source monitoring</div>
+      <div className="mt-auto hidden rounded-xl border border-slate-200 bg-slate-50 p-4 lg:block dark:border-slate-800 dark:bg-slate-900">
+        <div className="text-xs font-semibold text-slate-800 dark:text-white">Public-source monitoring</div>
         <p className="mt-2 text-[11px] leading-relaxed text-slate-500">
           Search, organize, and deliver intelligence from the public web.
         </p>

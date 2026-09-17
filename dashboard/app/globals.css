@@ -2,19 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+:root {
+  --ink: #0a1020;
+  --accent: #2563eb;
+  --accent-bright: #22d3ee;
+}
+
 body {
   background:
-    radial-gradient(circle at 12% 0%, rgba(59, 130, 246, 0.09), transparent 30rem),
-    radial-gradient(circle at 90% 12%, rgba(139, 92, 246, 0.07), transparent 26rem),
-    #f6f8fc;
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
   color: #0f172a;
+  font-family: 'DM Sans', ui-sans-serif, sans-serif;
+  letter-spacing: 0;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Space Grotesk', 'DM Sans', ui-sans-serif, sans-serif;
+  letter-spacing: 0;
 }
 
 html.dark body {
   background:
-    radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.18), transparent 30rem),
-    radial-gradient(circle at 90% 12%, rgba(14, 165, 233, 0.1), transparent 26rem),
-    #0b1220;
+    linear-gradient(180deg, #0f172a 0%, #0b1120 100%);
   color: #e2e8f0;
 }
 
@@ -24,7 +35,7 @@ html.dark body {
 
 @layer components {
   .panel {
-    @apply rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60;
+    @apply rounded-xl border border-slate-200 bg-white shadow-sm;
   }
 
   html.dark .panel,
@@ -33,11 +44,11 @@ html.dark body {
   }
 
   .hq-card {
-    @apply rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60;
+    @apply rounded-xl border border-slate-200 bg-white shadow-sm;
   }
 
   .eyebrow {
-    @apply text-[10px] font-semibold uppercase tracking-[0.18em] text-blue-600;
+    @apply text-[10px] font-bold uppercase tracking-[0.2em] text-blue-600;
   }
 
   .gradient-border {
@@ -52,14 +63,14 @@ html.dark body {
     z-index: -1;
     padding: 1px;
     border-radius: inherit;
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.45), rgba(124, 58, 237, 0.18), transparent 58%);
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.28), transparent 58%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
   }
 
   .field {
-    @apply w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500/70 focus:bg-white focus:ring-2 focus:ring-blue-500/10;
+    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10;
   }
 
   html.dark .field {
@@ -73,4 +84,23 @@ html.dark body {
   html.dark .select-field {
     @apply border-slate-700 bg-slate-800 text-slate-200;
   }
+
+  html.dark .panel,
+  html.dark .hq-card {
+    @apply border-slate-700 bg-slate-900 shadow-sm;
+  }
+
 }
+
+html.dark .text-slate-900,
+html.dark .text-slate-800,
+html.dark .text-slate-700 { color: #f1f5f9; }
+
+html.dark .text-slate-600,
+html.dark .text-slate-500 { color: #94a3b8; }
+
+html.dark .border-slate-100,
+html.dark .border-slate-200 { border-color: rgba(71, 85, 105, 0.72); }
+
+html.dark .bg-slate-50,
+html.dark .bg-white { background-color: rgba(15, 23, 42, 0.72); }

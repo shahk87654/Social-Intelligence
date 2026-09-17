@@ -15,11 +15,11 @@ type Post = {
 };
 
 const platformBadge: Record<string, string> = {
-  facebook: "bg-sky-500/10 text-sky-300 ring-sky-400/20",
-  instagram: "bg-pink-500/10 text-pink-300 ring-pink-400/20",
-  article: "bg-amber-500/10 text-amber-300 ring-amber-400/20",
-  website: "bg-emerald-500/10 text-emerald-300 ring-emerald-400/20",
-  google_review: "bg-indigo-500/10 text-indigo-300 ring-indigo-400/20",
+  facebook: "bg-sky-50 text-sky-700 ring-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:ring-sky-800",
+  instagram: "bg-pink-50 text-pink-700 ring-pink-200 dark:bg-pink-950/40 dark:text-pink-300 dark:ring-pink-800",
+  article: "bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:ring-amber-800",
+  website: "bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-800",
+  google_review: "bg-indigo-50 text-indigo-700 ring-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:ring-indigo-800",
 };
 
 export default function PostTable({ posts, loading }: { posts: Post[]; loading: boolean }) {
@@ -33,7 +33,7 @@ export default function PostTable({ posts, loading }: { posts: Post[]; loading: 
   return (
     <div className="hq-card overflow-hidden">
       <table className="min-w-full text-sm">
-        <thead className="bg-slate-50 text-left text-[11px] uppercase tracking-[0.12em] text-slate-400">
+        <thead className="bg-slate-50 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
           <tr>
             <th className="px-3 py-2">Platform</th>
             <th className="px-3 py-2">Author</th>
@@ -47,7 +47,7 @@ export default function PostTable({ posts, loading }: { posts: Post[]; loading: 
         </thead>
         <tbody>
           {posts.map((p) => (
-            <tr key={p.id} className="border-t border-slate-100 transition hover:bg-blue-50/40">
+            <tr key={p.id} className="border-t border-slate-100 transition hover:bg-blue-50/50 dark:hover:bg-slate-800/50">
               <td className="px-3 py-2">
                 <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium capitalize ring-1 ${platformBadge[p.platform] || "bg-white/5 text-gray-300 ring-white/10"}`}>
                   {p.platform === "article" ? "Article" : p.platform === "website" ? "Website" : p.platform === "google_review" ? "Google Review" : p.platform}
