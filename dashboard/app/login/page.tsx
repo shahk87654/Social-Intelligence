@@ -21,7 +21,7 @@ export default function LoginPage() {
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) setError(data.error || "Unable to sign in.");
-    else router.push("/");
+    else router.push("/dashboard");
     setLoading(false);
   }
 

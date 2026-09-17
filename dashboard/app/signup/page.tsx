@@ -16,7 +16,7 @@ export default function SignupPage() {
     const response = await fetch("/api/auth/signup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) setError(data.error || "Unable to create account.");
-    else router.push("/");
+    else router.push("/dashboard");
     setLoading(false);
   }
 

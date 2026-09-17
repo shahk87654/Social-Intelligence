@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
-  if (path.startsWith("/login") || path.startsWith("/signup") || path.startsWith("/api/auth")) {
+  if (path === "/" || path.startsWith("/login") || path.startsWith("/signup") || path.startsWith("/terms") || path.startsWith("/privacy") || path.startsWith("/api/auth")) {
     return NextResponse.next();
   }
   if (!request.cookies.get("signal_session") && !path.startsWith("/api/")) {
