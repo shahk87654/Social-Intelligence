@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { pool } from "@/lib/db";
 import { deleteIntegrationKey, saveIntegrationKey } from "@/lib/integrations";
+import { validateWebhookEndpoint } from "@/lib/webhook-security";
 
 export const dynamic = "force-dynamic";
 
@@ -47,10 +48,16 @@ export async function POST(req: Request) {
     }
     const name = typeof body.name === "string" ? body.name.trim() : "";
     const endpointUrl = typeof body.endpointUrl === "string" ? body.endpointUrl.trim() : "";
-    if (!name || !/^https?:\/\//.test(endpointUrl)) return NextResponse.json({ error: "Webhook name and HTTPS endpoint are required." }, { status: 400 });
+    if (!name) return NextResponse.json({ error: "Webhook name and HTTPS endpoint are required." }, { status: 400 });
+    let safeEndpointUrl: string;
+    try {
+      safeEndpointUrl = await validateWebhookEndpoint(endpointUrl);
+    } catch (error) {
+      return NextResponse.json({ error: error instanceof Error ? error.message : "Webhook endpoint is not allowed." }, { status: 400 });
+    }
     const secret = crypto.randomBytes(24).toString("hex");
     const events = Array.isArray(body.events) ? body.events : ["mention.created", "scan.completed"];
-    const result = await pool.query("INSERT INTO webhooks (organization_id, name, endpoint_url, secret, events) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, endpoint_url, events, enabled, created_at", [user.organization_id, name, endpointUrl, secret, events]);
+    const result = await pool.query("INSERT INTO webhooks (organization_id, name, endpoint_url, secret, events) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, endpoint_url, events, enabled, created_at", [user.organization_id, name, safeEndpointUrl, secret, events]);
     return NextResponse.json({ webhook: result.rows[0], secret }, { status: 201 });
   } catch (error) {
     console.error("Failed to create integration", error);

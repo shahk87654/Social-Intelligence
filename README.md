@@ -88,6 +88,19 @@ console.
 - Provide public Terms of Use, Privacy Policy, and branded authentication and
   not-found pages.
 
+### Security boundaries
+
+- Generated report downloads require an authenticated session and are limited
+  to the user's organization.
+- Webhooks require HTTPS and reject localhost, loopback, private, link-local,
+  multicast, reserved, and cloud metadata destinations.
+- Webhook endpoints are validated when registered and immediately before
+  delivery to reduce DNS-rebinding and configuration-drift risk.
+- Webhook payloads include an HMAC-SHA256 signature.
+- Keep `INTEGRATION_ENCRYPTION_KEY`, `REPORT_WORKER_SECRET`, database
+  credentials, and provider keys outside Git and rotate them through a
+  deployment secret manager.
+
 ## Feature snapshots
 
 These screenshots were captured from the authenticated workspace to show the
@@ -356,7 +369,7 @@ immediately; every later delivery is scheduled 24 hours after the previous
 attempt. Sent PDFs are retained in the database and can be downloaded from the
 report history.
 
-### Configure Resend email delivery
+### Configure organization email delivery
 
 Apply the updated schema after pulling this feature:
 
@@ -364,18 +377,22 @@ Apply the updated schema after pulling this feature:
 psql social_intel -f db\schema.sql
 ```
 
-Create a Resend account, create an API key, and verify the domain or sender
-address you will use. Then add these values to `dashboard\.env`:
+Create a Resend account and verify the domain or sender address you will use.
+The workspace administrator should save the Resend API key from the
+authenticated **Settings** page. It is encrypted before database storage and
+is never returned to the browser.
+
+The report worker still needs these operational values in `dashboard\.env`:
 
 ```text
 APP_URL=http://localhost:3000
 REPORT_WORKER_SECRET=use-a-long-random-secret
-RESEND_API_KEY=re_xxxxxxxxx
 REPORT_FROM_EMAIL=reports@your-verified-domain.com
+INTEGRATION_ENCRYPTION_KEY=use-a-long-random-secret
 ```
 
 The sender address must belong to a verified Resend domain (or use the sender
-address Resend provides for testing). Do not commit the API key.
+address Resend provides for testing). Do not commit any key or secret.
 
 ### Run the report worker
 

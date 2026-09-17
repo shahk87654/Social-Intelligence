@@ -6,6 +6,7 @@ import * as facebook from "./scrapers/facebook.js";
 import * as instagram from "./scrapers/instagram.js";
 import * as google from "./scrapers/google.js";
 import * as reviews from "./scrapers/reviews.js";
+import { validateWebhookEndpoint } from "./webhook-security.js";
 
 // Adding a platform later: implement scrapers/<name>.js with the same
 // `search(keyword, targets, { browser })` contract and add it here.
@@ -127,7 +128,8 @@ async function runScan(scanRunId, keyword, platforms, targets, organizationId, s
       const crypto = await import("node:crypto");
       const signature = crypto.createHmac("sha256", webhook.secret).update(payload).digest("hex");
       try {
-        const response = await fetch(webhook.endpoint_url, { method: "POST", headers: { "content-type": "application/json", "x-webhook-signature": `sha256=${signature}` }, body: payload, signal: AbortSignal.timeout(5000) });
+        const endpoint = await validateWebhookEndpoint(webhook.endpoint_url);
+        const response = await fetch(endpoint, { method: "POST", headers: { "content-type": "application/json", "x-webhook-signature": `sha256=${signature}` }, body: payload, signal: AbortSignal.timeout(5000) });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
       } catch (error) {
         console.error(`webhook delivery failed for ${webhook.endpoint_url}:`, error.message);
