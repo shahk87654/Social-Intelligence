@@ -35,6 +35,94 @@ The dashboard snapshot shows the protected-route entry state when no active
 session is present. Sign in to view the organization workspace and monitoring
 console.
 
+## Features
+
+### Monitor public conversations
+
+- Run focused scans across supported public Facebook, Instagram, article,
+  website, and Google review sources.
+- Save reusable monitoring briefs as projects with keywords, platforms, and
+  optional source targets.
+- Review normalized mentions in a searchable, filterable workspace with
+  platform, author, engagement, timestamp, and source URL context.
+- Open individual mention records for source details, tags, private notes, and
+  related intelligence.
+
+### Understand the signal
+
+- View mention volume, platform distribution, engagement totals, and
+  time-based activity trends.
+- Classify sentiment locally as positive, neutral, or negative.
+- Score source quality and flag likely spam or duplicate mentions.
+- Compare projects and keyword coverage to understand relative conversation
+  share.
+- Search across collected mentions, projects, and generated reports.
+
+### Turn intelligence into action
+
+- Create alert rules for negative sentiment, new mentions, volume spikes, and
+  scan failures.
+- Configure scheduled PDF reports with recipient, keyword, and platform
+  filters.
+- Export report history and download generated PDF or CSV outputs.
+- Register signed webhooks so downstream systems can receive new intelligence.
+- Use the read-only posts API for internal dashboards and automation.
+
+### Work as a team
+
+- Create an organization workspace during signup.
+- Invite teammates and share projects, reports, alerts, and source history.
+- Keep provider credentials scoped to the organization so invited members use
+  the workspace configuration without receiving plaintext keys.
+- Manage workspace integrations, API keys, webhooks, and dashboard preferences
+  from the authenticated console.
+
+### Enterprise-ready controls
+
+- Store Resend and SerpAPI credentials encrypted at rest with an
+  organization-level encryption key.
+- Keep provider credentials server-side; browsers receive configuration status,
+  not secret values.
+- Enforce organization-scoped data access across workspace APIs.
+- Support light and dark themes with a persistent user preference.
+- Provide public Terms of Use, Privacy Policy, and branded authentication and
+  not-found pages.
+
+## Feature snapshots
+
+These screenshots were captured from the authenticated workspace to show the
+main product surfaces described above.
+
+### Monitoring and discovery
+
+| Overview | Projects |
+|---|---|
+| ![Monitoring workspace](docs/screenshots/features/overview.png) | ![Monitoring projects](docs/screenshots/features/projects.png) |
+
+### Search and history
+
+| Scan history | Global search |
+|---|---|
+| ![Scan history](docs/screenshots/features/scan-history.png) | ![Global search](docs/screenshots/features/global-search.png) |
+
+### Collaboration and intelligence
+
+| Team workspace | Alerts |
+|---|---|
+| ![Team workspace](docs/screenshots/features/team.png) | ![Alert rules](docs/screenshots/features/alerts.png) |
+
+### Analysis and administration
+
+| Project comparison | Workspace settings |
+|---|---|
+| ![Project comparison](docs/screenshots/features/comparison.png) | ![Workspace settings](docs/screenshots/features/settings.png) |
+
+### Integrations and reporting
+
+| API keys and webhooks | Scheduled reports |
+|---|---|
+| ![Integrations](docs/screenshots/features/integrations.png) | ![Scheduled reports](docs/screenshots/features/reports.png) |
+
 ## Read this before you run anything
 
 This project deliberately does **not** use logins, cookies from a real
