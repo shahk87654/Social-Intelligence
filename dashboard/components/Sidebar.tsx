@@ -26,13 +26,9 @@ export default function Sidebar() {
 
   return (
     <aside className="border-b border-slate-200/70 bg-white/75 px-4 py-5 backdrop-blur-2xl lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-64 lg:flex-col lg:border-b-0 lg:border-r lg:border-slate-200/60 lg:px-6 lg:py-7 dark:border-slate-800/80 dark:bg-slate-950/70">
-      <a href="/dashboard" className="flex items-center gap-3 px-2">
-        <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-slate-950 text-sm font-black text-white shadow-lg shadow-blue-500/20 dark:bg-white dark:text-slate-950">
-          <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-cyan-400 ring-4 ring-white dark:ring-slate-950" />SI
-        </div>
-        <div>
-          <div className="text-sm font-semibold tracking-tight text-slate-900 dark:text-white">Signal / Intel</div>
-          <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">HQ research console</div>
+      <a href="/dashboard" className="flex items-center gap-3 px-1">
+        <div className="relative h-12 w-full max-w-[9rem] overflow-hidden">
+          <img src="/logo.png?v=4" alt="Social Intelligence" width={401} height={140} className="block h-auto w-full object-contain object-left invert dark:invert-0" />
         </div>
       </a>
 

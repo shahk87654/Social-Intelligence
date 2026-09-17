@@ -26,10 +26,9 @@ export default function LandingPage() {
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_75%_5%,rgba(34,211,238,0.18),transparent_28rem),radial-gradient(circle_at_20%_15%,rgba(37,99,235,0.2),transparent_30rem)]" />
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
-            <span className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white text-sm font-black text-slate-950">
-              <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-cyan-400 ring-4 ring-slate-950" />SI
+            <span className="relative h-12 w-44 overflow-hidden">
+              <img src="/logo.png?v=4" alt="Social Intelligence" width={401} height={140} className="block h-auto w-full object-contain object-left" />
             </span>
-            <span><span className="block text-sm font-semibold tracking-tight">Signal / Intel</span><span className="block text-[10px] uppercase tracking-[0.18em] text-slate-500">Market intelligence</span></span>
           </Link>
           <div className="flex items-center gap-3"><Link href="/login" className="hidden px-3 py-2 text-sm font-medium text-slate-300 transition hover:text-white sm:block">Sign in</Link><Link href="/signup" className="rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-100">Start monitoring</Link></div>
         </nav>
@@ -42,7 +41,7 @@ export default function LandingPage() {
 
       <section className="mx-auto max-w-7xl px-6 py-24 lg:px-8"><div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr]"><div><p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-400">One operating picture</p><h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">From public mentions to confident action.</h2></div><div className="grid gap-4 sm:grid-cols-3">{capabilities.map(([number, title, description]) => <div key={number} className="border-t border-white/15 pt-5"><div className="text-xs font-mono text-cyan-300">{number}</div><h3 className="mt-8 text-lg font-semibold">{title}</h3><p className="mt-3 text-sm leading-6 text-slate-400">{description}</p></div>)}</div></div></section>
 
-      <section className="border-y border-white/10 bg-slate-900/70">
+      <section id="how-it-works" className="border-y border-white/10 bg-slate-900/70">
         <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
           <div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">How it works</p><h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">A practical workflow from question to decision.</h2><p className="mt-5 text-base leading-7 text-slate-400">Start with the question your team needs answered. Signal / Intel keeps the collection, analysis, and follow-through in one auditable workspace.</p></div>
           <div className="mt-14 grid gap-x-8 gap-y-12 md:grid-cols-2">{workflow.map(([number, title, description]) => <div key={number} className="relative border-l border-white/15 pl-7"><span className="absolute -left-3 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white ring-8 ring-slate-900">{number}</span><h3 className="text-xl font-semibold">{title}</h3><p className="mt-3 max-w-md text-sm leading-7 text-slate-400">{description}</p></div>)}</div>
@@ -70,7 +69,44 @@ export default function LandingPage() {
 
       <section className="border-y border-white/10 bg-white/[0.03]"><div className="mx-auto flex max-w-7xl flex-col justify-between gap-8 px-6 py-16 sm:flex-row sm:items-center lg:px-8"><div><p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">Ready when you are</p><h2 className="mt-3 text-3xl font-semibold tracking-tight">Build your listening post.</h2></div><Link href="/signup" className="rounded-lg bg-white px-5 py-3.5 text-center text-sm font-semibold text-slate-950 transition hover:bg-cyan-100">Create a workspace</Link></div></section>
 
-      <footer className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-8 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between lg:px-8"><span>© 2026 Signal / Intel</span><div className="flex gap-5"><Link href="/privacy" className="transition hover:text-white">Privacy</Link><Link href="/terms" className="transition hover:text-white">Terms</Link><Link href="/login" className="transition hover:text-white">Sign in</Link></div></footer>
+      <footer className="border-t border-white/10 bg-slate-950">
+        <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
+          <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+            <div className="max-w-sm">
+              <img src="/logo.png?v=4" alt="Social Intelligence" width={401} height={140} className="block h-auto w-44 object-contain object-left" />
+              <p className="mt-5 text-sm leading-7 text-slate-400">A focused intelligence workspace for teams that need to understand public conversation and act with confidence.</p>
+              <Link href="/signup" className="mt-6 inline-flex items-center text-sm font-semibold text-cyan-300 transition hover:text-cyan-200">Start monitoring <span className="ml-2">→</span></Link>
+            </div>
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-300">Product</h3>
+              <div className="mt-5 space-y-3 text-sm text-slate-500">
+                <Link href="/signup" className="block transition hover:text-white">Create workspace</Link>
+                <Link href="/login" className="block transition hover:text-white">Open console</Link>
+                <Link href="/#how-it-works" className="block transition hover:text-white">How it works</Link>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-300">Company</h3>
+              <div className="mt-5 space-y-3 text-sm text-slate-500">
+                <a href="mailto:hello@signalintel.com" className="block transition hover:text-white">Contact us</a>
+                <a href="mailto:security@signalintel.com" className="block transition hover:text-white">Security</a>
+                <span className="block">Public-source intelligence</span>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-300">Legal</h3>
+              <div className="mt-5 space-y-3 text-sm text-slate-500">
+                <Link href="/privacy" className="block transition hover:text-white">Privacy policy</Link>
+                <Link href="/terms" className="block transition hover:text-white">Terms of use</Link>
+              </div>
+            </div>
+          </div>
+          <div className="mt-14 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+            <span>© 2026 Signal / Intel. All rights reserved.</span>
+            <span className="flex items-center gap-2"><i className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Systems operational</span>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 
