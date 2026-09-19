@@ -7,7 +7,7 @@ const widgetLabels = { stats: "Coverage cards", analytics: "Analytics charts", m
 
 export default function SettingsPage() {
   const [widgets, setWidgets] = useState<Record<string, boolean>>({});
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [theme, setTheme] = useState<"light" | "dark">(() => typeof document !== "undefined" && document.documentElement.classList.contains("dark") ? "dark" : "light");
   const [credentials, setCredentials] = useState<Record<string, boolean>>({});
   const [keys, setKeys] = useState({ resend: "", serpapi: "" });
   const [credentialSaved, setCredentialSaved] = useState<string | null>(null);
@@ -20,10 +20,12 @@ export default function SettingsPage() {
       setCredentials(Object.fromEntries((integrationData.credentials || []).map((item: { provider: string }) => [item.provider, true])));
     });
   }, []);
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    localStorage.setItem("signal-theme", theme);
+  }, [theme]);
   async function save() {
     await fetch("/api/preferences", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ widgets, theme }) });
-    localStorage.setItem("signal-theme", theme);
-    document.documentElement.classList.toggle("dark", theme === "dark");
     setSaved(true); setTimeout(() => setSaved(false), 1800);
   }
   async function saveKey(provider: "resend" | "serpapi") {

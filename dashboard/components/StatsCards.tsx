@@ -25,8 +25,8 @@ export default function StatsCards({ stats }: { stats: Stats | null }) {
   return (
     <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-9">
       {cards.map((c) => (
-        <div key={c.label} className="panel relative overflow-hidden p-3.5">
-          <span className={`absolute inset-x-0 top-0 h-0.5 ${c.accent}`} />
+        <div key={c.label} className="panel group relative overflow-hidden p-3.5 transition duration-200 hover:-translate-y-0.5 hover:border-blue-300/70 hover:shadow-[0_14px_32px_-20px_rgba(37,99,235,0.45)]">
+          <span className={`absolute inset-x-0 top-0 h-0.5 opacity-80 transition group-hover:h-1 ${c.accent}`} />
           <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500">{c.label}</div>
           <div className={`mt-2 text-xl font-semibold tracking-tight ${c.tone}`}>{c.value.toLocaleString()}</div>
         </div>
