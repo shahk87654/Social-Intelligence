@@ -1,119 +1,807 @@
 import Link from "next/link";
 
 const capabilities = [
-  ["01", "Discover", "Track public conversations across social platforms, articles, websites, and reviews."],
-  ["02", "Understand", "Turn raw mentions into sentiment, quality, duplicate, and risk signals."],
-  ["03", "Act", "Route important intelligence to your team through alerts, reports, and webhooks."],
+  [
+    "01",
+    "Discover",
+    "Track public conversations across social platforms, articles, websites, and reviews.",
+  ],
+  [
+    "02",
+    "Understand",
+    "Turn raw mentions into sentiment, quality, duplicate, and risk signals.",
+  ],
+  [
+    "03",
+    "Act",
+    "Route important intelligence to your team through alerts, reports, and webhooks.",
+  ],
 ];
 
 const useCases = [
-  ["Brand and communications", "Spot emerging narratives, understand sentiment shifts, and give leadership a defensible view of reputation."],
-  ["Market intelligence", "Track competitors, product conversations, and category momentum across the public web."],
-  ["Customer experience", "Surface recurring issues and high-value praise before they disappear into the feed."],
+  [
+    "Brand and communications",
+    "Spot emerging narratives, understand sentiment shifts, and give leadership a defensible view of reputation.",
+  ],
+  [
+    "Market intelligence",
+    "Track competitors, product conversations, and category momentum across the public web.",
+  ],
+  [
+    "Customer experience",
+    "Surface recurring issues and high-value praise before they disappear into the feed.",
+  ],
 ];
 
 const workflow = [
-  ["01", "Connect your sources", "Bring your own SerpAPI and Resend credentials, then configure the public platforms, keywords, and projects that matter to your team."],
-  ["02", "Launch a focused scan", "Search one topic or build a reusable monitoring brief. Narrow discovery with specific Facebook pages, Instagram targets, or source filters."],
-  ["03", "Read the operating picture", "Review coverage, sentiment, source quality, engagement, volume trends, duplicate signals, and the context behind every mention."],
-  ["04", "Move the work forward", "Create alerts, share reports, invite teammates, connect webhooks, or use the read-only API to bring intelligence into existing workflows."],
+  [
+    "01",
+    "Connect your sources",
+    "Bring your own SerpAPI and Resend credentials, then configure the public platforms, keywords, and projects that matter to your team.",
+  ],
+  [
+    "02",
+    "Launch a focused scan",
+    "Search one topic or build a reusable monitoring brief. Narrow discovery with specific Facebook pages, Instagram targets, or source filters.",
+  ],
+  [
+    "03",
+    "Read the operating picture",
+    "Review coverage, sentiment, source quality, engagement, volume trends, duplicate signals, and the context behind every mention.",
+  ],
+  [
+    "04",
+    "Move the work forward",
+    "Create alerts, share reports, invite teammates, connect webhooks, or use the read-only API to bring intelligence into existing workflows.",
+  ],
+];
+
+const snapshots = [
+  [
+    "01",
+    "Command center",
+    "Launch a focused scan and see coverage, engagement, and platform mix at a glance.",
+    "/snapshots/overview.png",
+  ],
+  [
+    "02",
+    "Monitoring briefs",
+    "Save repeatable projects with keywords, source targets, and team-ready scopes.",
+    "/snapshots/projects.png",
+  ],
+  [
+    "03",
+    "Signal response",
+    "Turn changes into alert rules your operators can review before a small issue becomes a large one.",
+    "/snapshots/alerts.png",
+  ],
+  [
+    "04",
+    "Executive delivery",
+    "Package the operating picture into scheduled reports for people who do not live in the console.",
+    "/snapshots/reports.png",
+  ],
 ];
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen overflow-hidden bg-slate-950 text-white">
+    <main className="min-h-screen overflow-hidden bg-slate-950 text-white selection:bg-cyan-300/30">
       <section className="relative isolate border-b border-white/10">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_75%_5%,rgba(34,211,238,0.18),transparent_28rem),radial-gradient(circle_at_20%_15%,rgba(37,99,235,0.2),transparent_30rem)]" />
+        <div className="landing-grid pointer-events-none absolute inset-0 -z-10" />
+        <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_75%_5%,rgba(34,211,238,0.16),transparent_32rem),linear-gradient(135deg,rgba(15,23,42,0.15),transparent_50%)]" />
+        <div className="landing-scanline pointer-events-none absolute left-0 right-0 top-0 -z-10 h-px bg-gradient-to-r from-transparent via-cyan-300/50 to-transparent" />
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
             <span className="relative h-12 w-44 overflow-hidden">
-              <img src="/logo.png?v=4" alt="Social Intelligence" width={401} height={140} className="block h-auto w-full object-contain object-left" />
+              <img
+                src="/logo.png?v=4"
+                alt="Social Intelligence"
+                width={401}
+                height={140}
+                className="block h-auto w-full object-contain object-left"
+              />
             </span>
           </Link>
-          <div className="flex items-center gap-3"><Link href="/login" className="hidden px-3 py-2 text-sm font-medium text-slate-300 transition hover:text-white sm:block">Sign in</Link><Link href="/signup" className="rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-100">Start monitoring</Link></div>
+          <div className="flex items-center gap-3">
+            <a
+              href="#product"
+              className="hidden px-3 py-2 text-sm font-medium text-slate-400 transition hover:text-white lg:block"
+            >
+              Product
+            </a>
+            <a
+              href="#snapshots"
+              className="hidden px-3 py-2 text-sm font-medium text-slate-400 transition hover:text-white lg:block"
+            >
+              Inside the console
+            </a>
+            <Link
+              href="/login"
+              className="hidden px-3 py-2 text-sm font-medium text-slate-300 transition hover:text-white sm:block"
+            >
+              Sign in
+            </Link>
+            <Link
+              href="/signup"
+              className="rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-100"
+            >
+              Start monitoring
+            </Link>
+          </div>
         </nav>
 
         <div className="mx-auto grid max-w-7xl gap-16 px-6 pb-24 pt-20 lg:grid-cols-[1fr_0.8fr] lg:items-center lg:px-8 lg:pb-32 lg:pt-28">
-          <div><p className="text-xs font-bold uppercase tracking-[0.24em] text-cyan-300">Public intelligence, operationalized</p><h1 className="mt-6 max-w-3xl text-5xl font-semibold leading-[0.98] tracking-tight sm:text-7xl">See the signal before it becomes noise.</h1><p className="mt-7 max-w-xl text-lg leading-8 text-slate-400">Signal / Intel gives teams a clear, accountable view of what the public web is saying about their brand, market, and competitors.</p><div className="mt-9 flex flex-col gap-3 sm:flex-row"><Link href="/signup" className="rounded-lg bg-blue-500 px-5 py-3.5 text-center text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-400">Create your workspace</Link><Link href="/login" className="rounded-lg border border-white/15 px-5 py-3.5 text-center text-sm font-semibold text-slate-200 transition hover:border-cyan-300/50 hover:text-white">Open console</Link></div><p className="mt-5 text-xs text-slate-500">Bring your own SerpAPI and Resend keys. Your workspace, your data, your controls.</p></div>
-          <div className="relative"><div className="rounded-2xl border border-white/10 bg-white/[0.06] p-3 shadow-2xl shadow-blue-950/40 backdrop-blur"><div className="rounded-xl border border-white/10 bg-slate-900 p-5"><div className="flex items-center justify-between border-b border-white/10 pb-4"><div><div className="text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-300">Live workspace</div><div className="mt-1 text-sm font-semibold">Market pulse</div></div><span className="flex items-center gap-2 text-[11px] text-emerald-300"><i className="h-2 w-2 rounded-full bg-emerald-400" />Operational</span></div><div className="grid grid-cols-3 gap-3 py-5"><div className="rounded-lg bg-white/[0.05] p-3"><div className="text-[10px] uppercase text-slate-500">Mentions</div><div className="mt-2 text-2xl font-semibold">12.8k</div><div className="mt-1 text-[10px] text-emerald-300">+18.4%</div></div><div className="rounded-lg bg-white/[0.05] p-3"><div className="text-[10px] uppercase text-slate-500">Sources</div><div className="mt-2 text-2xl font-semibold">426</div><div className="mt-1 text-[10px] text-slate-400">Across 4 channels</div></div><div className="rounded-lg bg-white/[0.05] p-3"><div className="text-[10px] uppercase text-slate-500">Risk</div><div className="mt-2 text-2xl font-semibold text-amber-300">Low</div><div className="mt-1 text-[10px] text-slate-400">Stable this week</div></div></div><div className="space-y-2"><div className="flex items-center justify-between rounded-lg border border-white/10 px-3 py-3 text-xs"><span className="text-slate-300">Conversation volume increased</span><span className="text-emerald-300">+32%</span></div><div className="flex items-center justify-between rounded-lg border border-white/10 px-3 py-3 text-xs"><span className="text-slate-300">New competitor mention detected</span><span className="text-cyan-300">Review</span></div></div></div></div><div className="absolute -bottom-5 -left-6 rounded-xl border border-cyan-300/20 bg-cyan-300/10 px-4 py-3 text-xs text-cyan-100 shadow-xl backdrop-blur"><span className="font-semibold">Signal detected</span><span className="ml-2 text-cyan-200/60">2m ago</span></div></div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-cyan-300">
+              Public intelligence, operationalized
+            </p>
+            <h1 className="mt-6 max-w-3xl text-5xl font-semibold leading-[0.98] tracking-tight sm:text-7xl">
+              See the signal before it becomes noise.
+            </h1>
+            <p className="mt-7 max-w-xl text-lg leading-8 text-slate-400">
+              Signal / Intel gives teams a clear, accountable view of what the
+              public web is saying about their brand, market, and competitors.
+            </p>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/signup"
+                className="rounded-lg bg-blue-500 px-5 py-3.5 text-center text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-400"
+              >
+                Create your workspace
+              </Link>
+              <Link
+                href="/login"
+                className="rounded-lg border border-white/15 px-5 py-3.5 text-center text-sm font-semibold text-slate-200 transition hover:border-cyan-300/50 hover:text-white"
+              >
+                Open console
+              </Link>
+            </div>
+            <div className="mt-7 flex flex-wrap gap-x-6 gap-y-2 text-xs text-slate-500">
+              <span className="flex items-center gap-2">
+                <i className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Public
+                sources only
+              </span>
+              <span className="flex items-center gap-2">
+                <i className="h-1.5 w-1.5 rounded-full bg-cyan-400" />{" "}
+                Organization-scoped
+              </span>
+              <span className="flex items-center gap-2">
+                <i className="h-1.5 w-1.5 rounded-full bg-blue-400" />{" "}
+                Audit-ready
+              </span>
+            </div>
+          </div>
+          <div className="relative">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-3 shadow-2xl shadow-blue-950/40 backdrop-blur">
+              <div className="rounded-xl border border-white/10 bg-slate-900 p-5">
+                <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                  <div>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-300">
+                      Live workspace
+                    </div>
+                    <div className="mt-1 text-sm font-semibold">
+                      Market pulse
+                    </div>
+                  </div>
+                  <span className="flex items-center gap-2 text-[11px] text-emerald-300">
+                    <i className="h-2 w-2 rounded-full bg-emerald-400" />
+                    Operational
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-3 py-5">
+                  <div className="rounded-lg bg-white/[0.05] p-3">
+                    <div className="text-[10px] uppercase text-slate-500">
+                      Mentions
+                    </div>
+                    <div className="mt-2 text-2xl font-semibold">12.8k</div>
+                    <div className="mt-1 text-[10px] text-emerald-300">
+                      +18.4%
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-white/[0.05] p-3">
+                    <div className="text-[10px] uppercase text-slate-500">
+                      Sources
+                    </div>
+                    <div className="mt-2 text-2xl font-semibold">426</div>
+                    <div className="mt-1 text-[10px] text-slate-400">
+                      Across 4 channels
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-white/[0.05] p-3">
+                    <div className="text-[10px] uppercase text-slate-500">
+                      Risk
+                    </div>
+                    <div className="mt-2 text-2xl font-semibold text-amber-300">
+                      Low
+                    </div>
+                    <div className="mt-1 text-[10px] text-slate-400">
+                      Stable this week
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between rounded-lg border border-white/10 px-3 py-3 text-xs">
+                    <span className="text-slate-300">
+                      Conversation volume increased
+                    </span>
+                    <span className="text-emerald-300">+32%</span>
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg border border-white/10 px-3 py-3 text-xs">
+                    <span className="text-slate-300">
+                      New competitor mention detected
+                    </span>
+                    <span className="text-cyan-300">Review</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute -bottom-5 -left-6 rounded-xl border border-cyan-300/20 bg-cyan-300/10 px-4 py-3 text-xs text-cyan-100 shadow-xl backdrop-blur">
+              <span className="font-semibold">Signal detected</span>
+              <span className="ml-2 text-cyan-200/60">2m ago</span>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-24 lg:px-8"><div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr]"><div><p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-400">One operating picture</p><h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">From public mentions to confident action.</h2></div><div className="grid gap-4 sm:grid-cols-3">{capabilities.map(([number, title, description]) => <div key={number} className="border-t border-white/15 pt-5"><div className="text-xs font-mono text-cyan-300">{number}</div><h3 className="mt-8 text-lg font-semibold">{title}</h3><p className="mt-3 text-sm leading-6 text-slate-400">{description}</p></div>)}</div></div></section>
+      <section id="product" className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
+        <div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr]">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-400">
+              One operating picture
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+              From public mentions to confident action.
+            </h2>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {capabilities.map(([number, title, description]) => (
+              <div key={number} className="border-t border-white/15 pt-5">
+                <div className="text-xs font-mono text-cyan-300">{number}</div>
+                <h3 className="mt-8 text-lg font-semibold">{title}</h3>
+                <p className="mt-3 text-sm leading-6 text-slate-400">
+                  {description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      <section id="how-it-works" className="border-y border-white/10 bg-slate-900/70">
+      <section
+        id="how-it-works"
+        className="border-y border-white/10 bg-slate-900/70"
+      >
         <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
-          <div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">How it works</p><h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">A practical workflow from question to decision.</h2><p className="mt-5 text-base leading-7 text-slate-400">Start with the question your team needs answered. Signal / Intel keeps the collection, analysis, and follow-through in one auditable workspace.</p></div>
-          <div className="mt-14 grid gap-x-8 gap-y-12 md:grid-cols-2">{workflow.map(([number, title, description]) => <div key={number} className="relative border-l border-white/15 pl-7"><span className="absolute -left-3 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white ring-8 ring-slate-900">{number}</span><h3 className="text-xl font-semibold">{title}</h3><p className="mt-3 max-w-md text-sm leading-7 text-slate-400">{description}</p></div>)}</div>
+          <div className="max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">
+              How it works
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+              A practical workflow from question to decision.
+            </h2>
+            <p className="mt-5 text-base leading-7 text-slate-400">
+              Start with the question your team needs answered. Signal / Intel
+              keeps the collection, analysis, and follow-through in one
+              auditable workspace.
+            </p>
+          </div>
+          <div className="mt-14 grid gap-x-8 gap-y-12 md:grid-cols-2">
+            {workflow.map(([number, title, description]) => (
+              <div
+                key={number}
+                className="relative border-l border-white/15 pl-7"
+              >
+                <span className="absolute -left-3 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-[10px] font-bold text-white ring-8 ring-slate-900">
+                  {number}
+                </span>
+                <h3 className="text-xl font-semibold">{title}</h3>
+                <p className="mt-3 max-w-md text-sm leading-7 text-slate-400">
+                  {description}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       <section className="border-y border-white/10 bg-white/[0.03]">
         <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
-          <div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">Built for the whole signal chain</p><h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">One workspace for every team that needs context.</h2><p className="mt-5 text-base leading-7 text-slate-400">Replace scattered screenshots, manual searches, and disconnected alerts with a shared operating picture that your team can inspect and act on.</p></div>
-          <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 md:grid-cols-3">{useCases.map(([title, description]) => <div key={title} className="bg-slate-950 p-7"><div className="h-1 w-8 rounded-full bg-blue-500" /><h3 className="mt-8 text-lg font-semibold">{title}</h3><p className="mt-3 text-sm leading-6 text-slate-400">{description}</p></div>)}</div>
+          <div className="max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">
+              Built for the whole signal chain
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+              One workspace for every team that needs context.
+            </h2>
+            <p className="mt-5 text-base leading-7 text-slate-400">
+              Replace scattered screenshots, manual searches, and disconnected
+              alerts with a shared operating picture that your team can inspect
+              and act on.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 md:grid-cols-3">
+            {useCases.map(([title, description]) => (
+              <div key={title} className="bg-slate-950 p-7">
+                <div className="h-1 w-8 rounded-full bg-blue-500" />
+                <h3 className="mt-8 text-lg font-semibold">{title}</h3>
+                <p className="mt-3 text-sm leading-6 text-slate-400">
+                  {description}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-24 lg:px-8"><div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-center"><div><p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-400">Designed for accountable decisions</p><h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">The signal is only useful when your team can move on it.</h2></div><div className="grid gap-8 sm:grid-cols-2"><div className="border-l border-cyan-300/40 pl-5"><div className="text-3xl font-semibold text-white">4+</div><p className="mt-2 text-sm leading-6 text-slate-400">Public source types in one monitoring workflow.</p></div><div className="border-l border-cyan-300/40 pl-5"><div className="text-3xl font-semibold text-white">1</div><p className="mt-2 text-sm leading-6 text-slate-400">Shared workspace for projects, reports, alerts, and history.</p></div><div className="border-l border-cyan-300/40 pl-5"><div className="text-3xl font-semibold text-white">0</div><p className="mt-2 text-sm leading-6 text-slate-400">Private credentials exposed to the browser after saving.</p></div><div className="border-l border-cyan-300/40 pl-5"><div className="text-3xl font-semibold text-white">24/7</div><p className="mt-2 text-sm leading-6 text-slate-400">A durable record of the conversations shaping your market.</p></div></div></div></section>
+      <section
+        id="snapshots"
+        className="border-y border-cyan-300/10 bg-[#08111f]"
+      >
+        <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
+          <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+            <div className="max-w-2xl">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">
+                Inside the console
+              </p>
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+                A real workspace for the work after discovery.
+              </h2>
+              <p className="mt-5 text-base leading-7 text-slate-400">
+                Explore the surfaces your team uses every day: scan, organize,
+                prioritize, and deliver. Every screen is built to keep context
+                close to the decision.
+              </p>
+            </div>
+            <Link
+              href="/signup"
+              className="w-fit rounded-lg border border-cyan-300/30 px-4 py-2.5 text-sm font-semibold text-cyan-200 transition hover:border-cyan-200 hover:bg-cyan-300/10"
+            >
+              Explore the full workspace →
+            </Link>
+          </div>
+          <div className="mt-14 grid gap-5 md:grid-cols-2">
+            {snapshots.map(([number, title, description, image]) => (
+              <article
+                key={number}
+                className="group overflow-hidden rounded-2xl border border-white/10 bg-slate-950 shadow-2xl shadow-black/20"
+              >
+                <div className="overflow-hidden border-b border-white/10 bg-slate-900 p-2">
+                  <img
+                    src={image}
+                    alt={`${title} Signal / Intel application screen`}
+                    width={1440}
+                    height={900}
+                    className="aspect-[16/10] w-full rounded-xl object-cover object-top opacity-90 transition duration-500 group-hover:scale-[1.025] group-hover:opacity-100"
+                  />
+                </div>
+                <div className="p-6">
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-xs text-cyan-300">
+                      {number}
+                    </span>
+                    <h3 className="text-lg font-semibold">{title}</h3>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-slate-400">
+                    {description}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-24 lg:px-8"><div className="grid gap-12 lg:grid-cols-[0.7fr_1.3fr]"><div><p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">Source coverage</p><h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">A wider view of the conversations that matter.</h2><p className="mt-5 text-sm leading-7 text-slate-400">Bring multiple public channels into one consistent record, then compare them with the same filters, scores, and reporting workflow.</p></div><div className="grid gap-3 sm:grid-cols-2"><div className="rounded-xl border border-white/10 bg-white/[0.04] p-5"><div className="text-sm font-semibold">Social platforms</div><p className="mt-2 text-sm leading-6 text-slate-400">Monitor public Facebook pages and Instagram targets with focused collection options.</p></div><div className="rounded-xl border border-white/10 bg-white/[0.04] p-5"><div className="text-sm font-semibold">Web discovery</div><p className="mt-2 text-sm leading-6 text-slate-400">Find relevant articles and websites through keyword-driven public search.</p></div><div className="rounded-xl border border-white/10 bg-white/[0.04] p-5"><div className="text-sm font-semibold">Reviews and feedback</div><p className="mt-2 text-sm leading-6 text-slate-400">Keep customer sentiment and public review signals alongside broader market context.</p></div><div className="rounded-xl border border-white/10 bg-white/[0.04] p-5"><div className="text-sm font-semibold">Normalized records</div><p className="mt-2 text-sm leading-6 text-slate-400">Compare source, author, content, dates, engagement, sentiment, and quality in one schema.</p></div></div></div></section>
+      <section className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
+        <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-400">
+              Designed for accountable decisions
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+              The signal is only useful when your team can move on it.
+            </h2>
+          </div>
+          <div className="grid gap-8 sm:grid-cols-2">
+            <div className="border-l border-cyan-300/40 pl-5">
+              <div className="text-3xl font-semibold text-white">4+</div>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Public source types in one monitoring workflow.
+              </p>
+            </div>
+            <div className="border-l border-cyan-300/40 pl-5">
+              <div className="text-3xl font-semibold text-white">1</div>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Shared workspace for projects, reports, alerts, and history.
+              </p>
+            </div>
+            <div className="border-l border-cyan-300/40 pl-5">
+              <div className="text-3xl font-semibold text-white">0</div>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Private credentials exposed to the browser after saving.
+              </p>
+            </div>
+            <div className="border-l border-cyan-300/40 pl-5">
+              <div className="text-3xl font-semibold text-white">24/7</div>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                A durable record of the conversations shaping your market.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <section className="border-y border-white/10 bg-white/[0.03]"><div className="mx-auto max-w-7xl px-6 py-24 lg:px-8"><div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-400">Team collaboration</p><h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Give every stakeholder the same source of truth.</h2><p className="mt-5 text-sm leading-7 text-slate-400">Create a private workspace for the people who monitor, interpret, and respond to market signals.</p></div><div className="mt-12 grid gap-8 md:grid-cols-3"><div><div className="font-mono text-xs text-cyan-300">MONITOR</div><h3 className="mt-4 text-lg font-semibold">Analysts</h3><p className="mt-2 text-sm leading-6 text-slate-400">Save projects, refine keywords, inspect source detail, and annotate important mentions.</p></div><div><div className="font-mono text-xs text-cyan-300">INTERPRET</div><h3 className="mt-4 text-lg font-semibold">Leaders</h3><p className="mt-2 text-sm leading-6 text-slate-400">Use comparison views, trends, and scheduled reports to make decisions with context.</p></div><div><div className="font-mono text-xs text-cyan-300">RESPOND</div><h3 className="mt-4 text-lg font-semibold">Operators</h3><p className="mt-4 text-lg font-semibold">Act on the signal.</p><p className="mt-2 text-sm leading-6 text-slate-400">Route alerts, coordinate owners, and connect intelligence to downstream systems.</p></div></div></div></section>
+      <section className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
+        <div className="grid gap-12 lg:grid-cols-[0.7fr_1.3fr]">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">
+              Source coverage
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+              A wider view of the conversations that matter.
+            </h2>
+            <p className="mt-5 text-sm leading-7 text-slate-400">
+              Bring multiple public channels into one consistent record, then
+              compare them with the same filters, scores, and reporting
+              workflow.
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-xl border border-white/10 bg-white/[0.04] p-5">
+              <div className="text-sm font-semibold">Social platforms</div>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Monitor public Facebook pages and Instagram targets with focused
+                collection options.
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/[0.04] p-5">
+              <div className="text-sm font-semibold">Web discovery</div>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Find relevant articles and websites through keyword-driven
+                public search.
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/[0.04] p-5">
+              <div className="text-sm font-semibold">Reviews and feedback</div>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Keep customer sentiment and public review signals alongside
+                broader market context.
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/[0.04] p-5">
+              <div className="text-sm font-semibold">Normalized records</div>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Compare source, author, content, dates, engagement, sentiment,
+                and quality in one schema.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-24 lg:px-8"><div className="grid gap-10 lg:grid-cols-2 lg:items-center"><div><p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">Reports and alerts</p><h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Stay close to the signal without living in the dashboard.</h2><p className="mt-5 text-sm leading-7 text-slate-400">Schedule executive-ready PDF or CSV reports, create rules for meaningful changes, and send structured events into the tools your team already uses.</p></div><div className="space-y-3"><div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] p-4"><span className="text-sm">Negative sentiment threshold crossed</span><span className="rounded-full bg-red-400/10 px-3 py-1 text-xs font-semibold text-red-300">Critical</span></div><div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] p-4"><span className="text-sm">Weekly leadership brief ready</span><span className="rounded-full bg-cyan-400/10 px-3 py-1 text-xs font-semibold text-cyan-300">Report</span></div><div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] p-4"><span className="text-sm">Webhook delivered to operations</span><span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">Delivered</span></div></div></div></section>
+      <section className="border-y border-white/10 bg-white/[0.03]">
+        <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
+          <div className="max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-400">
+              Team collaboration
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+              Give every stakeholder the same source of truth.
+            </h2>
+            <p className="mt-5 text-sm leading-7 text-slate-400">
+              Create a private workspace for the people who monitor, interpret,
+              and respond to market signals.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-8 md:grid-cols-3">
+            <div>
+              <div className="font-mono text-xs text-cyan-300">MONITOR</div>
+              <h3 className="mt-4 text-lg font-semibold">Analysts</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Save projects, refine keywords, inspect source detail, and
+                annotate important mentions.
+              </p>
+            </div>
+            <div>
+              <div className="font-mono text-xs text-cyan-300">INTERPRET</div>
+              <h3 className="mt-4 text-lg font-semibold">Leaders</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Use comparison views, trends, and scheduled reports to make
+                decisions with context.
+              </p>
+            </div>
+            <div>
+              <div className="font-mono text-xs text-cyan-300">RESPOND</div>
+              <h3 className="mt-4 text-lg font-semibold">Operators</h3>
+              <p className="mt-4 text-lg font-semibold">Act on the signal.</p>
+              <p className="mt-2 text-sm leading-6 text-slate-400">
+                Route alerts, coordinate owners, and connect intelligence to
+                downstream systems.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <section className="border-y border-white/10 bg-slate-900/70"><div className="mx-auto max-w-7xl px-6 py-24 lg:px-8"><div className="grid gap-12 lg:grid-cols-[1fr_0.8fr] lg:items-center"><div><p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-400">Security and control</p><h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">Your workspace stays yours.</h2><p className="mt-5 text-sm leading-7 text-slate-400">Signal / Intel is designed around organization boundaries, private sessions, controlled access, and credentials that remain server-side.</p></div><div className="grid gap-3 sm:grid-cols-2"><div className="rounded-xl border border-white/10 p-5"><div className="text-2xl font-semibold text-cyan-300">AES</div><p className="mt-2 text-sm text-slate-400">Integration credentials encrypted at rest.</p></div><div className="rounded-xl border border-white/10 p-5"><div className="text-2xl font-semibold text-cyan-300">ORG</div><p className="mt-2 text-sm text-slate-400">Data scoped to each workspace.</p></div><div className="rounded-xl border border-white/10 p-5"><div className="text-2xl font-semibold text-cyan-300">API</div><p className="mt-2 text-sm text-slate-400">Read-only access for downstream tools.</p></div><div className="rounded-xl border border-white/10 p-5"><div className="text-2xl font-semibold text-cyan-300">OWN</div><p className="mt-2 text-sm text-slate-400">Bring your own provider credentials.</p></div></div></div></div></section>
+      <section className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
+        <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">
+              Reports and alerts
+            </p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+              Stay close to the signal without living in the dashboard.
+            </h2>
+            <p className="mt-5 text-sm leading-7 text-slate-400">
+              Schedule executive-ready PDF or CSV reports, create rules for
+              meaningful changes, and send structured events into the tools your
+              team already uses.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] p-4">
+              <span className="text-sm">
+                Negative sentiment threshold crossed
+              </span>
+              <span className="rounded-full bg-red-400/10 px-3 py-1 text-xs font-semibold text-red-300">
+                Critical
+              </span>
+            </div>
+            <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] p-4">
+              <span className="text-sm">Weekly leadership brief ready</span>
+              <span className="rounded-full bg-cyan-400/10 px-3 py-1 text-xs font-semibold text-cyan-300">
+                Report
+              </span>
+            </div>
+            <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] p-4">
+              <span className="text-sm">Webhook delivered to operations</span>
+              <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+                Delivered
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <section className="mx-auto max-w-4xl px-6 py-24 lg:px-8"><div className="text-center"><p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">Questions, answered</p><h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">A clearer way to get started.</h2></div><div className="mt-12 divide-y divide-white/10 border-y border-white/10">{[["Do I need to provide my own API keys?", "Yes. Your workspace can securely connect its own SerpAPI and Resend credentials, giving your team control over provider usage and billing."], ["Can multiple people use one workspace?", "Yes. Invite teammates into the organization workspace and share projects, reports, alerts, and source history with the appropriate access."], ["What data does Signal / Intel monitor?", "The platform is built for public-source monitoring across supported social targets, search results, websites, articles, and review signals."], ["Can I export or connect the results?", "Yes. Use scheduled PDF or CSV reports, signed webhooks, or the read-only API to move intelligence into existing workflows."]].map(([question, answer]) => <details key={question} className="group py-5"><summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-sm font-semibold"><span>{question}</span><span className="text-xl font-normal text-cyan-300 transition group-open:rotate-45">+</span></summary><p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">{answer}</p></details>)}</div></section>
+      <section className="border-y border-white/10 bg-slate-900/70">
+        <div className="mx-auto max-w-7xl px-6 py-24 lg:px-8">
+          <div className="grid gap-12 lg:grid-cols-[1fr_0.8fr] lg:items-center">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-blue-400">
+                Security and control
+              </p>
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+                Your workspace stays yours.
+              </h2>
+              <p className="mt-5 text-sm leading-7 text-slate-400">
+                Signal / Intel is designed around organization boundaries,
+                private sessions, controlled access, and credentials that remain
+                server-side.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-xl border border-white/10 p-5">
+                <div className="text-2xl font-semibold text-cyan-300">AES</div>
+                <p className="mt-2 text-sm text-slate-400">
+                  Integration credentials encrypted at rest.
+                </p>
+              </div>
+              <div className="rounded-xl border border-white/10 p-5">
+                <div className="text-2xl font-semibold text-cyan-300">ORG</div>
+                <p className="mt-2 text-sm text-slate-400">
+                  Data scoped to each workspace.
+                </p>
+              </div>
+              <div className="rounded-xl border border-white/10 p-5">
+                <div className="text-2xl font-semibold text-cyan-300">API</div>
+                <p className="mt-2 text-sm text-slate-400">
+                  Read-only access for downstream tools.
+                </p>
+              </div>
+              <div className="rounded-xl border border-white/10 p-5">
+                <div className="text-2xl font-semibold text-cyan-300">OWN</div>
+                <p className="mt-2 text-sm text-slate-400">
+                  Bring your own provider credentials.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <section className="border-y border-white/10 bg-white/[0.03]"><div className="mx-auto flex max-w-7xl flex-col justify-between gap-8 px-6 py-16 sm:flex-row sm:items-center lg:px-8"><div><p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">Ready when you are</p><h2 className="mt-3 text-3xl font-semibold tracking-tight">Build your listening post.</h2></div><Link href="/signup" className="rounded-lg bg-white px-5 py-3.5 text-center text-sm font-semibold text-slate-950 transition hover:bg-cyan-100">Create a workspace</Link></div></section>
+      <section className="mx-auto max-w-4xl px-6 py-24 lg:px-8">
+        <div className="text-center">
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">
+            Questions, answered
+          </p>
+          <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+            A clearer way to get started.
+          </h2>
+        </div>
+        <div className="mt-12 divide-y divide-white/10 border-y border-white/10">
+          {[
+            [
+              "Do I need to provide my own API keys?",
+              "Yes. Your workspace can securely connect its own SerpAPI and Resend credentials, giving your team control over provider usage and billing.",
+            ],
+            [
+              "Can multiple people use one workspace?",
+              "Yes. Invite teammates into the organization workspace and share projects, reports, alerts, and source history with the appropriate access.",
+            ],
+            [
+              "What data does Signal / Intel monitor?",
+              "The platform is built for public-source monitoring across supported social targets, search results, websites, articles, and review signals.",
+            ],
+            [
+              "Can I export or connect the results?",
+              "Yes. Use scheduled PDF or CSV reports, signed webhooks, or the read-only API to move intelligence into existing workflows.",
+            ],
+          ].map(([question, answer]) => (
+            <details key={question} className="group py-5">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-sm font-semibold">
+                <span>{question}</span>
+                <span className="text-xl font-normal text-cyan-300 transition group-open:rotate-45">
+                  +
+                </span>
+              </summary>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">
+                {answer}
+              </p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y border-white/10 bg-white/[0.03]">
+        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-8 px-6 py-16 sm:flex-row sm:items-center lg:px-8">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">
+              Ready when you are
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight">
+              Build your listening post.
+            </h2>
+          </div>
+          <Link
+            href="/signup"
+            className="rounded-lg bg-white px-5 py-3.5 text-center text-sm font-semibold text-slate-950 transition hover:bg-cyan-100"
+          >
+            Create a workspace
+          </Link>
+        </div>
+      </section>
 
       <footer className="border-t border-white/10 bg-slate-950">
         <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
             <div className="max-w-sm">
-              <img src="/logo.png?v=4" alt="Social Intelligence" width={401} height={140} className="block h-auto w-44 object-contain object-left" />
-              <p className="mt-5 text-sm leading-7 text-slate-400">A focused intelligence workspace for teams that need to understand public conversation and act with confidence.</p>
-              <Link href="/signup" className="mt-6 inline-flex items-center text-sm font-semibold text-cyan-300 transition hover:text-cyan-200">Start monitoring <span className="ml-2">→</span></Link>
+              <img
+                src="/logo.png?v=4"
+                alt="Social Intelligence"
+                width={401}
+                height={140}
+                className="block h-auto w-44 object-contain object-left"
+              />
+              <p className="mt-5 text-sm leading-7 text-slate-400">
+                A focused intelligence workspace for teams that need to
+                understand public conversation and act with confidence.
+              </p>
+              <Link
+                href="/signup"
+                className="mt-6 inline-flex items-center text-sm font-semibold text-cyan-300 transition hover:text-cyan-200"
+              >
+                Start monitoring <span className="ml-2">→</span>
+              </Link>
             </div>
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-300">Product</h3>
+              <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-300">
+                Product
+              </h3>
               <div className="mt-5 space-y-3 text-sm text-slate-500">
-                <Link href="/signup" className="block transition hover:text-white">Create workspace</Link>
-                <Link href="/login" className="block transition hover:text-white">Open console</Link>
-                <Link href="/#how-it-works" className="block transition hover:text-white">How it works</Link>
+                <Link
+                  href="/signup"
+                  className="block transition hover:text-white"
+                >
+                  Create workspace
+                </Link>
+                <Link
+                  href="/login"
+                  className="block transition hover:text-white"
+                >
+                  Open console
+                </Link>
+                <Link
+                  href="/#how-it-works"
+                  className="block transition hover:text-white"
+                >
+                  How it works
+                </Link>
               </div>
             </div>
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-300">Company</h3>
+              <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-300">
+                Company
+              </h3>
               <div className="mt-5 space-y-3 text-sm text-slate-500">
-                <Link href="/about" className="block transition hover:text-white">About Signal / Intel</Link>
-                <Link href="/contact" className="block transition hover:text-white">Contact us</Link>
-                <Link href="/security" className="block transition hover:text-white">Security</Link>
+                <Link
+                  href="/about"
+                  className="block transition hover:text-white"
+                >
+                  About Signal / Intel
+                </Link>
+                <Link
+                  href="/contact"
+                  className="block transition hover:text-white"
+                >
+                  Contact us
+                </Link>
+                <Link
+                  href="/security"
+                  className="block transition hover:text-white"
+                >
+                  Security
+                </Link>
                 <span className="block">Public-source intelligence</span>
               </div>
             </div>
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-300">Legal</h3>
+              <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-300">
+                Legal
+              </h3>
               <div className="mt-5 space-y-3 text-sm text-slate-500">
-                <Link href="/privacy" className="block transition hover:text-white">Privacy policy</Link>
-                <Link href="/terms" className="block transition hover:text-white">Terms of use</Link>
-                <Link href="/licenses" className="block transition hover:text-white">Open-source licenses</Link>
-                <Link href="/disclaimer" className="block transition hover:text-white">Disclaimer</Link>
-                <Link href="/ai-policy" className="block transition hover:text-white">AI policy</Link>
-                <Link href="/accessibility" className="block transition hover:text-white">Accessibility</Link>
-                <Link href="/status" className="block transition hover:text-white">System status</Link>
+                <Link
+                  href="/privacy"
+                  className="block transition hover:text-white"
+                >
+                  Privacy policy
+                </Link>
+                <Link
+                  href="/terms"
+                  className="block transition hover:text-white"
+                >
+                  Terms of use
+                </Link>
+                <Link
+                  href="/licenses"
+                  className="block transition hover:text-white"
+                >
+                  Open-source licenses
+                </Link>
+                <Link
+                  href="/disclaimer"
+                  className="block transition hover:text-white"
+                >
+                  Disclaimer
+                </Link>
+                <Link
+                  href="/ai-policy"
+                  className="block transition hover:text-white"
+                >
+                  AI policy
+                </Link>
+                <Link
+                  href="/accessibility"
+                  className="block transition hover:text-white"
+                >
+                  Accessibility
+                </Link>
+                <Link
+                  href="/status"
+                  className="block transition hover:text-white"
+                >
+                  System status
+                </Link>
               </div>
             </div>
           </div>
           <div className="mt-14 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
             <span>© 2026 Signal / Intel. All rights reserved.</span>
-            <span className="flex items-center gap-2"><i className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Systems operational</span>
+            <span className="flex items-center gap-2">
+              <i className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Systems
+              operational
+            </span>
           </div>
         </div>
       </footer>
     </main>
   );
-
 }
