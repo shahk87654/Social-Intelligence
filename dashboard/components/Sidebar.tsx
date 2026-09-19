@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const groups = [
   {
@@ -28,6 +29,8 @@ const groups = [
       { href: "/integrations", label: "Integrations", icon: "⌘" },
       { href: "/settings", label: "Settings", icon: "⚙" },
       { href: "/audit-logs", label: "Audit log", icon: "≡" },
+      { href: "/support", label: "Support", icon: "?" },
+      { href: "/super-admin", label: "Platform admin", icon: "◆", superAdminOnly: true },
     ],
   },
 ];
@@ -35,7 +38,11 @@ const groups = [
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
+  useEffect(() => {
+    fetch("/api/auth/me").then((response) => response.json()).then((data) => setIsSuperAdmin(Boolean(data.user?.is_super_admin))).catch(() => setIsSuperAdmin(false));
+  }, []);
   async function signOut() {
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
@@ -59,7 +66,7 @@ export default function Sidebar() {
           <div key={group.label} className="flex shrink-0 gap-1 lg:block lg:mt-3 first:lg:mt-0">
             <div className="hidden px-2.5 pb-1.5 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400/80 lg:block">{group.label}</div>
             <div className="flex gap-1 lg:block">
-              {group.links.map((link) => {
+              {group.links.filter((link) => !link.superAdminOnly || isSuperAdmin).map((link) => {
                 const active = pathname === link.href;
                 return (
                   <a

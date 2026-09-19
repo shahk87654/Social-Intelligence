@@ -39,12 +39,12 @@ export async function checkRateLimit(key: string, maxAttempts: number, windowMin
     `INSERT INTO auth_rate_limits (key, attempts, window_started_at)
      VALUES ($1, 1, now())
      ON CONFLICT (key) DO UPDATE SET
-       attempts = CASE WHEN auth_rate_limits.window_started_at < now() - ($3 * interval '1 minute')
+       attempts = CASE WHEN auth_rate_limits.window_started_at < now() - ($2::integer * interval '1 minute')
                        THEN 1 ELSE auth_rate_limits.attempts + 1 END,
-       window_started_at = CASE WHEN auth_rate_limits.window_started_at < now() - ($3 * interval '1 minute')
+       window_started_at = CASE WHEN auth_rate_limits.window_started_at < now() - ($2::integer * interval '1 minute')
                                 THEN now() ELSE auth_rate_limits.window_started_at END
      RETURNING attempts`,
-    [key, maxAttempts, windowMinutes]
+    [key, windowMinutes]
   );
   return result.rows[0].attempts <= maxAttempts;
 }
@@ -82,7 +82,7 @@ export async function getCurrentUser() {
   const id = cookies().get(SESSION_COOKIE)?.value;
   if (!id) return null;
   const result = await pool.query(
-    `SELECT u.id, u.email, u.name, om.organization_id, om.role, o.name AS organization_name
+    `SELECT u.id, u.email, u.name, u.is_super_admin, om.organization_id, om.role, o.name AS organization_name
      FROM sessions s
      JOIN users u ON u.id = s.user_id
      JOIN organization_members om ON om.user_id = u.id

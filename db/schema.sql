@@ -131,8 +131,11 @@ CREATE TABLE IF NOT EXISTS users (
     email         TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     name          TEXT NOT NULL,
+    is_super_admin BOOLEAN NOT NULL DEFAULT false,
     created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_super_admin BOOLEAN NOT NULL DEFAULT false;
 
 CREATE TABLE IF NOT EXISTS dashboard_preferences (
     user_id      INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
@@ -338,3 +341,40 @@ CREATE TABLE IF NOT EXISTS alerts (
 
 CREATE INDEX IF NOT EXISTS idx_alert_rules_org ON alert_rules(organization_id, enabled);
 CREATE INDEX IF NOT EXISTS idx_alerts_org ON alerts(organization_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS support_tickets (
+    id              BIGSERIAL PRIMARY KEY,
+    organization_id INTEGER REFERENCES organizations(id) ON DELETE CASCADE,
+    user_id         INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    name            TEXT NOT NULL,
+    email           TEXT NOT NULL,
+    subject         TEXT NOT NULL,
+    message         TEXT NOT NULL,
+    priority        TEXT NOT NULL DEFAULT 'normal' CHECK (priority IN ('low', 'normal', 'high', 'urgent')),
+    status          TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'in_progress', 'resolved', 'closed')),
+    admin_reply     TEXT,
+    replied_by      INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    replied_at      TIMESTAMPTZ,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE support_tickets ADD COLUMN IF NOT EXISTS admin_reply TEXT;
+ALTER TABLE support_tickets ADD COLUMN IF NOT EXISTS replied_by INTEGER REFERENCES users(id) ON DELETE SET NULL;
+ALTER TABLE support_tickets ADD COLUMN IF NOT EXISTS replied_at TIMESTAMPTZ;
+
+CREATE INDEX IF NOT EXISTS idx_support_tickets_org ON support_tickets(organization_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_support_tickets_status ON support_tickets(status, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS support_ticket_messages (
+    id           BIGSERIAL PRIMARY KEY,
+    ticket_id    BIGINT NOT NULL REFERENCES support_tickets(id) ON DELETE CASCADE,
+    author_id    INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    author_name  TEXT NOT NULL,
+    author_email TEXT NOT NULL,
+    author_type  TEXT NOT NULL CHECK (author_type IN ('customer', 'support')),
+    body         TEXT NOT NULL,
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_support_ticket_messages_ticket ON support_ticket_messages(ticket_id, created_at ASC);
