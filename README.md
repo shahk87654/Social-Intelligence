@@ -15,6 +15,29 @@ social-intel-dashboard/
 The current interface is organized around a public marketing entry point,
 focused authentication flows, and a protected operations console.
 
+### Recent interface additions
+
+- Futuristic Signal / Intel landing page with animated radar geometry, live
+  telemetry, waveform motion, responsive console previews, and an upgraded
+  navigation system.
+- Interactive FAQ accordion and animated console snapshot gallery using the
+  current overview, global search, alerts, and reporting captures.
+- Authenticated dashboard setup guidance that explains which services are
+  required before the first scan.
+- Dedicated `/api-integration` guide for SerpAPI discovery, Meta Graph social
+  targets, Resend delivery, credential security, and setup verification.
+- API integration link added to the authenticated sidebar and workspace
+  controls linked from the command center.
+
+The console snapshot assets used by the landing page are tracked in
+[`dashboard/public/snapshots`](dashboard/public/snapshots):
+
+- `overview.png` — command center
+- `global-search.png` — global search
+- `alerts.png` — signal response
+- `reports.png` — executive delivery
+- `projects.png` — monitoring briefs
+
 ### Landing page
 
 ![Signal / Intel landing page](docs/screenshots/landing.png)
