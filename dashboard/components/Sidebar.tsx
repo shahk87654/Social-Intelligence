@@ -25,6 +25,7 @@ const groups = [
     label: "Operate",
     links: [
       { href: "/reports", label: "Reports", icon: "↗" },
+      { href: "/api-integration", label: "API integration", icon: "⌁" },
       { href: "/team", label: "Team", icon: "♧" },
       { href: "/integrations", label: "Integrations", icon: "⌘" },
       { href: "/settings", label: "Settings", icon: "⚙" },

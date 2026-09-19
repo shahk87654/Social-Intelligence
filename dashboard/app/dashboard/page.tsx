@@ -214,6 +214,22 @@ export default function DashboardPage() {
         </div>
       )}
 
+      <section className="mb-6 rounded-xl border border-blue-200/80 bg-blue-50/70 p-5 dark:border-blue-900/70 dark:bg-blue-950/20 sm:p-6">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-300">Important before your first scan</p>
+            <h2 className="mt-2 text-lg font-semibold text-slate-900 dark:text-white">Connect the services that power your workspace.</h2>
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-400">SerpAPI powers public-web discovery. Meta credentials narrow Facebook and Instagram collection. Resend is required for report delivery and account email.</p>
+          </div>
+          <a href="/api-integration" className="shrink-0 rounded-lg bg-blue-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-blue-700">View API setup</a>
+        </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <a href="/api-integration#serpapi" className="rounded-lg border border-blue-200 bg-white/70 p-3 text-sm transition hover:border-blue-400 dark:border-blue-900 dark:bg-slate-900/40"><strong className="block text-slate-900 dark:text-white">SerpAPI</strong><span className="mt-1 block text-xs text-slate-500 dark:text-slate-400">Search and discovery</span></a>
+          <a href="/api-integration#meta" className="rounded-lg border border-blue-200 bg-white/70 p-3 text-sm transition hover:border-blue-400 dark:border-blue-900 dark:bg-slate-900/40"><strong className="block text-slate-900 dark:text-white">Meta Graph</strong><span className="mt-1 block text-xs text-slate-500 dark:text-slate-400">Facebook and Instagram targets</span></a>
+          <a href="/api-integration#resend" className="rounded-lg border border-blue-200 bg-white/70 p-3 text-sm transition hover:border-blue-400 dark:border-blue-900 dark:bg-slate-900/40"><strong className="block text-slate-900 dark:text-white">Resend</strong><span className="mt-1 block text-xs text-slate-500 dark:text-slate-400">Reports and email delivery</span></a>
+        </div>
+      </section>
+
       <section className="panel gradient-border relative mb-8 overflow-hidden border-blue-200/70 p-5 sm:p-7 dark:border-blue-900/70">
         <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-blue-500/10 blur-3xl" />
         <div className="relative">
