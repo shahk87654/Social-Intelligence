@@ -1,0 +1,7 @@
+import PublicInfoPage from "@/components/PublicInfoPage";
+
+export const metadata = { title: "Disclaimer | Signal / Intel", description: "Important limitations for Signal / Intel analysis and information." };
+
+export default function DisclaimerPage() {
+  return <PublicInfoPage eyebrow="Important information" title="Disclaimer" description="Signal / Intel provides monitoring and decision-support tools, not professional advice."><h2>Decision support only</h2><p>Search results, sentiment labels, source-quality scores, duplicate or spam indicators, alerts, reports, and summaries may be incomplete, delayed, or inaccurate. They are intended to help teams investigate public conversation, not to replace professional legal, financial, security, compliance, or communications advice.</p><h2>Verify before acting</h2><p>Review the original public source and use appropriate human judgment before making a material decision, contacting a person, publishing a response, or taking action based on information shown in the product.</p><h2>Public-source limitations</h2><p>Coverage depends on what supported providers and public pages make available. Signal / Intel does not guarantee that a source will be found, remain available, or be represented completely.</p></PublicInfoPage>;
+}

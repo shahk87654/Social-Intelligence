@@ -1,0 +1,7 @@
+import PublicInfoPage from "@/components/PublicInfoPage";
+
+export const metadata = { title: "Security | Signal / Intel", description: "Security practices and reporting contact for Signal / Intel." };
+
+export default function SecurityPage() {
+  return <PublicInfoPage eyebrow="Trust and control" title="Security" description="Signal / Intel is designed with organization boundaries, controlled access, and server-side credential handling in mind."><h2>Protection practices</h2><p>Workspace access uses authenticated sessions and organization-scoped queries. Provider credentials are encrypted at rest, kept server-side, and are not returned to the browser after saving. Administrative and destructive workspace actions are recorded in an audit trail.</p><h2>Responsible disclosure</h2><p>Please report suspected vulnerabilities privately to <a href="mailto:security@signalintel.com">security@signalintel.com</a>. Include enough detail to reproduce the issue, affected route or component, and a safe way to contact you. Please do not include real credentials or private customer data.</p><h2>Customer responsibilities</h2><p>Keep account credentials and API keys private, use least-privilege workspace roles, and configure provider credentials through the workspace settings rather than sharing them in tickets or source code.</p></PublicInfoPage>;
+}

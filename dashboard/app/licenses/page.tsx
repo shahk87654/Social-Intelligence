@@ -1,0 +1,7 @@
+import PublicInfoPage from "@/components/PublicInfoPage";
+
+export const metadata = { title: "Open-source licenses | Signal / Intel", description: "Third-party software used by Signal / Intel." };
+
+export default function LicensesPage() {
+  return <PublicInfoPage eyebrow="Transparency" title="Open-source licenses" description="Signal / Intel is built with open-source software. We are grateful to the maintainers and projects that make the product possible."><h2>Third-party software</h2><p>This application uses packages from the Node.js and React ecosystems, including Next.js, React, PostgreSQL client libraries, bcryptjs, jose, PDFKit, Resend, Tailwind CSS, and their transitive dependencies.</p><p>Those packages are distributed under their respective licenses, primarily the MIT, Apache-2.0, ISC, BSD, and PostgreSQL licenses. Their copyright and license notices remain with the applicable package.</p><h2>Getting the exact notices</h2><p>The authoritative dependency versions and license metadata are recorded in the project&apos;s lockfiles and installed package metadata. For a complete notice bundle for a deployment, contact <a href="mailto:legal@signalintel.com">legal@signalintel.com</a>.</p></PublicInfoPage>;
+}

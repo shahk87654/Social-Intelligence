@@ -1,0 +1,7 @@
+import PublicInfoPage from "@/components/PublicInfoPage";
+
+export const metadata = { title: "AI policy | Signal / Intel", description: "How Signal / Intel uses automated and AI-assisted analysis." };
+
+export default function AiPolicyPage() {
+  return <PublicInfoPage eyebrow="Responsible use" title="AI policy" description="Signal / Intel uses automated analysis to help teams organize public-source information while keeping people in control."><h2>Where automation is used</h2><p>The product may use automated classification and analysis for signals such as sentiment, source quality, duplicate detection, spam indicators, summaries, trends, and report preparation. These outputs are decision-support signals, not facts guaranteed by Signal / Intel.</p><h2>Human review</h2><p>Users should review source context and original public material before relying on an output. Workspace teams remain responsible for decisions, communications, and actions taken from product results.</p><h2>Data boundaries</h2><p>Signal / Intel is designed around public-source monitoring and organization-scoped workspaces. Do not submit sensitive personal information or confidential material unless your organization has a lawful basis and the applicable configuration supports that use.</p><h2>Questions</h2><p>For questions about automated analysis or an output, contact <a href="mailto:privacy@signalintel.com">privacy@signalintel.com</a>.</p></PublicInfoPage>;
+}
