@@ -1,12 +1,12 @@
 import "dotenv/config";
 import express from "express";
 import { chromium } from "playwright";
-import { createScanRun, evaluateAlerts, finishScanRun, reserveSerpSearches, upsertPosts } from "./db.js";
+import { createScanRun, dispatchWebhookEvent, evaluateAlerts, finishScanRun, reserveSerpSearches, upsertPosts } from "./db.js";
 import * as facebook from "./scrapers/facebook.js";
 import * as instagram from "./scrapers/instagram.js";
 import * as google from "./scrapers/google.js";
 import * as reviews from "./scrapers/reviews.js";
-import { validateWebhookEndpoint } from "./webhook-security.js";
+import { verifyScraperRequest } from "./scraper-auth.js";
 
 // Adding a platform later: implement scrapers/<name>.js with the same
 // `search(keyword, targets, { browser })` contract and add it here.
@@ -18,6 +18,18 @@ const PLATFORM_REGISTRY = {
 
 const app = express();
 app.use(express.json());
+app.use((req, res, next) => {
+  if (req.path === "/health") return next();
+  try {
+    if (!verifyScraperRequest(req)) return res.status(401).json({ error: "Unauthorized scraper request." });
+    return next();
+  } catch (error) {
+    console.error("scraper authentication is not configured:", error);
+    return res.status(503).json({ error: "Scraper authentication is not configured." });
+  }
+});
+
+app.get("/health", (_req, res) => res.json({ ok: true }));
 
 app.post("/scrape", async (req, res) => {
   const { keyword, platforms, targets = {}, organizationId, serpApiKey } = req.body || {};
@@ -121,20 +133,7 @@ async function runScan(scanRunId, keyword, platforms, targets, organizationId, s
     }
     await finishScanRun(scanRunId, { status: "completed", postsFound: totalFound });
     await evaluateAlerts(keyword, "completed", totalFound, organizationId);
-    const { pool } = await import("./db.js");
-    const { rows } = await pool.query("SELECT endpoint_url, secret FROM webhooks WHERE organization_id = $1 AND enabled = true AND ('scan.completed' = ANY(events) OR cardinality(events) = 0)", [organizationId]);
-    const payload = JSON.stringify({ event: "scan.completed", data: { scanRunId, keyword, postsFound: totalFound }, occurredAt: new Date().toISOString() });
-    await Promise.allSettled(rows.map(async (webhook) => {
-      const crypto = await import("node:crypto");
-      const signature = crypto.createHmac("sha256", webhook.secret).update(payload).digest("hex");
-      try {
-        const endpoint = await validateWebhookEndpoint(webhook.endpoint_url);
-        const response = await fetch(endpoint, { method: "POST", headers: { "content-type": "application/json", "x-webhook-signature": `sha256=${signature}` }, body: payload, signal: AbortSignal.timeout(5000) });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      } catch (error) {
-        console.error(`webhook delivery failed for ${webhook.endpoint_url}:`, error.message);
-      }
-    }));
+    await dispatchWebhookEvent(organizationId, "scan.completed", { scanRunId, keyword, postsFound: totalFound });
   } finally {
     if (browser) await browser.close();
   }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/db";
-import { createSession, hashPassword } from "@/lib/auth";
+import { createSession, hashPassword, issueAuthToken } from "@/lib/auth";
+import { createMailer } from "@/lib/mailer";
 
 export async function POST(req: Request) {
   try {
@@ -28,6 +29,14 @@ export async function POST(req: Request) {
         [organization.rows[0].id, user.rows[0].id]
       );
       await client.query("COMMIT");
+      try {
+        const token = await issueAuthToken(user.rows[0].id, "email_verification");
+        const url = `${process.env.APP_URL || new URL(req.url).origin}/verify-email?token=${encodeURIComponent(token)}`;
+        const { sendAuthEmail } = await createMailer(organization.rows[0].id);
+        await sendAuthEmail(email, "Verify your Signal / Intel email", `Verify your email by opening this link (valid for 1 hour):\n\n${url}`);
+      } catch (mailError) {
+        console.error("Verification email failed", mailError);
+      }
       await createSession(user.rows[0].id);
       return NextResponse.json({ authenticated: true }, { status: 201 });
     } catch (error) {

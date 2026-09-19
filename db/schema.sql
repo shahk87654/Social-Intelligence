@@ -118,6 +118,22 @@ ALTER TABLE report_schedules ADD COLUMN IF NOT EXISTS email_subject TEXT;
 ALTER TABLE report_schedules ADD COLUMN IF NOT EXISTS email_message TEXT;
 ALTER TABLE report_schedules ADD COLUMN IF NOT EXISTS organization_id INTEGER;
 
+-- Foundational identity tables are declared before tables that reference them.
+CREATE TABLE IF NOT EXISTS organizations (
+    id         SERIAL PRIMARY KEY,
+    name       TEXT NOT NULL,
+    slug       TEXT NOT NULL UNIQUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS users (
+    id            SERIAL PRIMARY KEY,
+    email         TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    name          TEXT NOT NULL,
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE TABLE IF NOT EXISTS dashboard_preferences (
     user_id      INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     widgets      JSONB NOT NULL DEFAULT '{"stats":true,"analytics":true,"mentions":true}'::jsonb,
@@ -146,15 +162,26 @@ CREATE TABLE IF NOT EXISTS webhooks (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS webhook_deliveries (
+    id              BIGSERIAL PRIMARY KEY,
+    webhook_id      INTEGER NOT NULL REFERENCES webhooks(id) ON DELETE CASCADE,
+    organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    event           TEXT NOT NULL,
+    payload         JSONB NOT NULL,
+    status          TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'succeeded', 'failed')),
+    attempts        INTEGER NOT NULL DEFAULT 0,
+    response_status INTEGER,
+    error_message   TEXT,
+    next_attempt_at TIMESTAMPTZ,
+    delivered_at    TIMESTAMPTZ,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
 CREATE INDEX IF NOT EXISTS idx_api_keys_org ON api_keys(organization_id);
 CREATE INDEX IF NOT EXISTS idx_webhooks_org ON webhooks(organization_id, enabled);
-
-CREATE TABLE IF NOT EXISTS organizations (
-    id         SERIAL PRIMARY KEY,
-    name       TEXT NOT NULL,
-    slug       TEXT NOT NULL UNIQUE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_org ON webhook_deliveries(organization_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_retry ON webhook_deliveries(status, next_attempt_at);
 
 CREATE TABLE IF NOT EXISTS organization_integrations (
     organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -164,12 +191,23 @@ CREATE TABLE IF NOT EXISTS organization_integrations (
     PRIMARY KEY (organization_id, provider)
 );
 
-CREATE TABLE IF NOT EXISTS users (
-    id            SERIAL PRIMARY KEY,
-    email         TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    name          TEXT NOT NULL,
-    created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified_at TIMESTAMPTZ;
+
+CREATE TABLE IF NOT EXISTS auth_tokens (
+    id              BIGSERIAL PRIMARY KEY,
+    user_id         INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash      TEXT NOT NULL UNIQUE,
+    token_type      TEXT NOT NULL CHECK (token_type IN ('password_reset', 'email_verification')),
+    expires_at      TIMESTAMPTZ NOT NULL,
+    used_at         TIMESTAMPTZ,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_auth_tokens_lookup ON auth_tokens(token_hash, token_type, expires_at);
+
+CREATE TABLE IF NOT EXISTS auth_rate_limits (
+    key                 TEXT PRIMARY KEY,
+    attempts            INTEGER NOT NULL DEFAULT 0,
+    window_started_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS organization_members (

@@ -40,6 +40,7 @@ export default function LoginPage() {
           <input required type="password" className="field" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
           <button disabled={loading} className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 disabled:opacity-50">{loading ? "Signing in…" : "Sign in"}</button>
         </form>
+        <p className="mt-4 text-center text-sm"><a className="font-semibold text-blue-600" href="/forgot-password">Forgot your password?</a></p>
         <p className="mt-6 text-center text-sm text-slate-500">New to Signal / Intel? <a className="font-semibold text-blue-600" href="/signup">Create an account</a></p>
         </div>
       </section>

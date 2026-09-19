@@ -87,6 +87,13 @@ console.
 - Support light and dark themes with a persistent user preference.
 - Provide public Terms of Use, Privacy Policy, and branded authentication and
   not-found pages.
+- Use hashed, single-use, expiring tokens for password reset and email
+  verification.
+- Apply database-backed rate limits to login and password-reset requests.
+- Authenticate dashboard-to-scraper traffic with a timestamped HMAC signature;
+  the scraper rejects missing, invalid, and replayed requests.
+- Record webhook delivery attempts, retry transient failures with backoff,
+  expose delivery history, and allow organization-scoped replay.
 
 ### Security boundaries
 
@@ -97,6 +104,12 @@ console.
 - Webhook endpoints are validated when registered and immediately before
   delivery to reduce DNS-rebinding and configuration-drift risk.
 - Webhook payloads include an HMAC-SHA256 signature.
+- Scraper requests use a separate shared HMAC secret and a five-minute
+  freshness window.
+- Password reset and email-verification tokens are stored only as SHA-256
+  hashes and are single-use.
+- Configure `SCRAPER_SHARED_SECRET` identically in `dashboard/.env` and
+  `scraper/.env`; use a random value of at least 32 characters.
 - Keep `INTEGRATION_ENCRYPTION_KEY`, `REPORT_WORKER_SECRET`, database
   credentials, and provider keys outside Git and rotate them through a
   deployment secret manager.

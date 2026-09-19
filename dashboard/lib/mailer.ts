@@ -11,6 +11,10 @@ export async function createMailer(organizationId?: number) {
 
   const resend = new Resend(apiKey);
   return {
+    sendAuthEmail: async (to: string, subject: string, text: string) => {
+      const result = await resend.emails.send({ from, to, subject, text });
+      if (result.error) throw new Error(result.error.message);
+    },
     sendReport: async (to: string | string[], subject: string, pdf: Buffer, fileName: string, text: string, cc: string[] = []) => {
       const result = await resend.emails.send({
         from,

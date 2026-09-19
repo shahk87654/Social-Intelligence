@@ -1,6 +1,7 @@
 import pg from "pg";
 import "dotenv/config";
 import crypto from "node:crypto";
+import { validateWebhookEndpoint } from "./webhook-security.js";
 
 export const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -45,23 +46,53 @@ function contentFingerprint(post) {
   return normalized.length >= 40 ? crypto.createHash("sha256").update(normalized).digest("hex") : null;
 }
 
-async function dispatchWebhookEvent(organizationId, event, data) {
-  const { rows } = await pool.query(
-    `SELECT endpoint_url, secret FROM webhooks
-     WHERE organization_id = $1 AND enabled = true AND ($2 = ANY(events) OR cardinality(events) = 0)`,
-    [organizationId, event]
-  );
-  const payload = JSON.stringify({ event, data, occurredAt: new Date().toISOString() });
-  await Promise.allSettled(rows.map(async (webhook) => {
-    const signature = crypto.createHmac("sha256", webhook.secret).update(payload).digest("hex");
+const RETRY_DELAYS_MS = [0, 1000, 5000];
+
+async function deliverWebhook(deliveryId, webhook, payload) {
+  let lastError = "Unknown delivery error";
+  for (let attempt = 0; attempt < RETRY_DELAYS_MS.length; attempt += 1) {
+    if (RETRY_DELAYS_MS[attempt]) await new Promise((resolve) => setTimeout(resolve, RETRY_DELAYS_MS[attempt]));
     try {
-      const response = await fetch(webhook.endpoint_url, {
+      const endpoint = await validateWebhookEndpoint(webhook.endpoint_url);
+      const signature = crypto.createHmac("sha256", webhook.secret).update(payload).digest("hex");
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: { "content-type": "application/json", "x-webhook-signature": `sha256=${signature}` },
         body: payload,
         signal: AbortSignal.timeout(5000),
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      await pool.query(
+        "UPDATE webhook_deliveries SET status = 'succeeded', attempts = $2, response_status = $3, delivered_at = now(), updated_at = now(), next_attempt_at = NULL WHERE id = $1",
+        [deliveryId, attempt + 1, response.status]
+      );
+      return;
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : String(error);
+      await pool.query(
+        "UPDATE webhook_deliveries SET attempts = $2, response_status = NULL, error_message = $3, next_attempt_at = $4, updated_at = now() WHERE id = $1",
+        [deliveryId, attempt + 1, lastError, attempt + 1 < RETRY_DELAYS_MS.length ? new Date(Date.now() + RETRY_DELAYS_MS[attempt + 1]) : null]
+      );
+    }
+  }
+  await pool.query("UPDATE webhook_deliveries SET status = 'failed', error_message = $2, updated_at = now() WHERE id = $1", [deliveryId, lastError]);
+  throw new Error(lastError);
+}
+
+export async function dispatchWebhookEvent(organizationId, event, data) {
+  const { rows } = await pool.query(
+    `SELECT id, endpoint_url, secret FROM webhooks
+     WHERE organization_id = $1 AND enabled = true AND ($2 = ANY(events) OR cardinality(events) = 0)`,
+    [organizationId, event]
+  );
+  const payload = JSON.stringify({ event, data, occurredAt: new Date().toISOString() });
+  await Promise.allSettled(rows.map(async (webhook) => {
+    const delivery = await pool.query(
+      "INSERT INTO webhook_deliveries (webhook_id, organization_id, event, payload) VALUES ($1, $2, $3, $4::jsonb) RETURNING id",
+      [webhook.id, organizationId, event, payload]
+    );
+    try {
+      await deliverWebhook(delivery.rows[0].id, webhook, payload);
     } catch (error) {
       console.error(`webhook delivery failed for ${webhook.endpoint_url}:`, error.message);
     }

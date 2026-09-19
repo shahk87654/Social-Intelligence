@@ -11,15 +11,16 @@ export async function GET() {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
-    const [keys, webhooks] = await Promise.all([
+    const [keys, webhooks, deliveries] = await Promise.all([
       pool.query("SELECT id, name, key_prefix, last_used_at, created_at FROM api_keys WHERE organization_id = $1 ORDER BY created_at DESC", [user.organization_id]),
       pool.query("SELECT id, name, endpoint_url, events, enabled, created_at FROM webhooks WHERE organization_id = $1 ORDER BY created_at DESC", [user.organization_id]),
+      pool.query("SELECT d.id, d.webhook_id, w.name AS webhook_name, d.event, d.status, d.attempts, d.response_status, d.error_message, d.created_at, d.delivered_at FROM webhook_deliveries d JOIN webhooks w ON w.id = d.webhook_id WHERE d.organization_id = $1 ORDER BY d.created_at DESC LIMIT 50", [user.organization_id]),
     ]);
     const credentials = await pool.query(
       "SELECT provider, updated_at FROM organization_integrations WHERE organization_id = $1 ORDER BY provider",
       [user.organization_id]
     );
-    return NextResponse.json({ keys: keys.rows, webhooks: webhooks.rows, credentials: credentials.rows });
+    return NextResponse.json({ keys: keys.rows, webhooks: webhooks.rows, deliveries: deliveries.rows, credentials: credentials.rows });
   } catch (error) {
     console.error("Failed to load integrations", error);
     return NextResponse.json({ error: "Unable to load integrations." }, { status: 503 });
@@ -31,6 +32,29 @@ export async function POST(req: Request) {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
     const body = await req.json();
+    if (body.type === "replay") {
+      const deliveryId = Number(body.deliveryId);
+      if (!Number.isInteger(deliveryId)) return NextResponse.json({ error: "A delivery id is required." }, { status: 400 });
+      const delivery = await pool.query(
+        "SELECT d.id, d.event, d.payload, w.endpoint_url, w.secret FROM webhook_deliveries d JOIN webhooks w ON w.id = d.webhook_id WHERE d.id = $1 AND d.organization_id = $2",
+        [deliveryId, user.organization_id]
+      );
+      if (!delivery.rows.length) return NextResponse.json({ error: "Delivery not found." }, { status: 404 });
+      const row = delivery.rows[0];
+      try {
+        const endpoint = await validateWebhookEndpoint(row.endpoint_url);
+        const payload = JSON.stringify(row.payload);
+        const signature = crypto.createHmac("sha256", row.secret).update(payload).digest("hex");
+        const response = await fetch(endpoint, { method: "POST", headers: { "content-type": "application/json", "x-webhook-signature": `sha256=${signature}` }, body: payload, signal: AbortSignal.timeout(5000) });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        await pool.query("UPDATE webhook_deliveries SET status = 'succeeded', attempts = attempts + 1, response_status = $2, error_message = NULL, delivered_at = now(), updated_at = now() WHERE id = $1", [deliveryId, response.status]);
+        return NextResponse.json({ replayed: true });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Replay failed.";
+        await pool.query("UPDATE webhook_deliveries SET status = 'failed', attempts = attempts + 1, error_message = $2, updated_at = now() WHERE id = $1", [deliveryId, message]);
+        return NextResponse.json({ error: message }, { status: 502 });
+      }
+    }
     if (body.type === "credential") {
       const provider = body.provider === "resend" || body.provider === "serpapi" ? body.provider : null;
       const value = typeof body.value === "string" ? body.value.trim() : "";

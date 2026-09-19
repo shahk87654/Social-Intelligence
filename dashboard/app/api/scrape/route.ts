@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { getIntegrationKey } from "@/lib/integrations";
+import { scraperHeaders } from "@/lib/scraper-auth";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,10 +12,11 @@ export async function POST(req: NextRequest) {
     const serpApiKey = await getIntegrationKey(user.organization_id, "serpapi");
     if (!serpApiKey) return NextResponse.json({ error: "Add your SerpAPI key in Settings before starting a scan." }, { status: 400 });
 
+    const requestBody = JSON.stringify({ ...body, organizationId: user.organization_id, serpApiKey });
     const resp = await fetch(`${scraperUrl}/scrape`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...body, organizationId: user.organization_id, serpApiKey }),
+      headers: scraperHeaders(requestBody),
+      body: requestBody,
     });
     const text = await resp.text();
     let data: unknown;
