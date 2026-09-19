@@ -45,7 +45,7 @@ export async function GET() {
     return NextResponse.json({ schedules: schedules.rows, reports: reports.rows });
   } catch (error) {
     console.error("Failed to load report schedules", error);
-    return NextResponse.json({ error: "Unable to load report schedules. Apply db/schema.sql first." }, { status: 503 });
+    return NextResponse.json({ error: "Unable to load report schedules. Run `psql $DATABASE_URL -f db/schema.sql` from the project root, then try again." }, { status: 503 });
   }
 }
 

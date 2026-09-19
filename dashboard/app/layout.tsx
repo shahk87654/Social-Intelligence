@@ -1,4 +1,5 @@
 import "./globals.css";
+import HowToGuide from "@/components/HowToGuide";
 
 export const metadata = {
   title: "Social Intelligence Dashboard",
@@ -15,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: `try { if (localStorage.getItem("signal-theme") === "dark") document.documentElement.classList.add("dark"); } catch (_) {}` }} />
       </head>
-      <body className="min-h-screen">{children}</body>
+      <body className="min-h-screen">{children}<HowToGuide /></body>
     </html>
   );
 }
