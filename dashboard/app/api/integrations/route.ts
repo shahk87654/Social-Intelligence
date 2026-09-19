@@ -1,8 +1,8 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, recordAuditEvent } from "@/lib/auth";
 import { pool } from "@/lib/db";
-import { deleteIntegrationKey, saveIntegrationKey } from "@/lib/integrations";
+import { deleteIntegrationKey, saveIntegrationKey, saveIntegrationConfig, validateProviderConfig, Provider } from "@/lib/integrations";
 import { validateWebhookEndpoint } from "@/lib/webhook-security";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +31,7 @@ export async function POST(req: Request) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+    if (user.role !== "admin") return NextResponse.json({ error: "Only workspace admins can manage integrations." }, { status: 403 });
     const body = await req.json();
     if (body.type === "replay") {
       const deliveryId = Number(body.deliveryId);
@@ -56,10 +57,17 @@ export async function POST(req: Request) {
       }
     }
     if (body.type === "credential") {
-      const provider = body.provider === "resend" || body.provider === "serpapi" ? body.provider : null;
+      const provider = ["resend", "serpapi", "slack", "microsoft_teams", "meta_graph", "google_business_profile"].includes(body.provider) ? body.provider as Provider : null;
       const value = typeof body.value === "string" ? body.value.trim() : "";
-      if (!provider || !value) return NextResponse.json({ error: "A supported provider and API key are required." }, { status: 400 });
-      await saveIntegrationKey(user.organization_id, provider, value);
+      if (!provider) return NextResponse.json({ error: "A supported provider is required." }, { status: 400 });
+      if (provider === "slack" || provider === "microsoft_teams" || provider === "meta_graph" || provider === "google_business_profile") {
+        try { await saveIntegrationConfig(user.organization_id, provider, validateProviderConfig(provider, body.config)); }
+        catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "Invalid provider configuration." }, { status: 400 }); }
+      } else {
+        if (!value) return NextResponse.json({ error: "An API key is required." }, { status: 400 });
+        await saveIntegrationKey(user.organization_id, provider, value);
+      }
+      await recordAuditEvent({ organizationId: user.organization_id, actorId: user.id, action: "integration.updated", resourceType: "integration", resourceId: provider });
       return NextResponse.json({ provider, configured: true }, { status: 201 });
     }
     const type = body.type === "webhook" ? "webhook" : "key";
@@ -68,6 +76,7 @@ export async function POST(req: Request) {
       if (!name) return NextResponse.json({ error: "API key name is required." }, { status: 400 });
       const raw = `si_${crypto.randomBytes(28).toString("hex")}`;
       await pool.query("INSERT INTO api_keys (organization_id, name, key_prefix, key_hash, created_by) VALUES ($1, $2, $3, $4, $5)", [user.organization_id, name, raw.slice(0, 11), crypto.createHash("sha256").update(raw).digest("hex"), user.id]);
+      await recordAuditEvent({ organizationId: user.organization_id, actorId: user.id, action: "api_key.created", resourceType: "api_key", metadata: { name } });
       return NextResponse.json({ key: raw }, { status: 201 });
     }
     const name = typeof body.name === "string" ? body.name.trim() : "";
@@ -82,6 +91,7 @@ export async function POST(req: Request) {
     const secret = crypto.randomBytes(24).toString("hex");
     const events = Array.isArray(body.events) ? body.events : ["mention.created", "scan.completed"];
     const result = await pool.query("INSERT INTO webhooks (organization_id, name, endpoint_url, secret, events) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, endpoint_url, events, enabled, created_at", [user.organization_id, name, safeEndpointUrl, secret, events]);
+    await recordAuditEvent({ organizationId: user.organization_id, actorId: user.id, action: "webhook.created", resourceType: "webhook", resourceId: result.rows[0].id, metadata: { name } });
     return NextResponse.json({ webhook: result.rows[0], secret }, { status: 201 });
   } catch (error) {
     console.error("Failed to create integration", error);
@@ -93,17 +103,20 @@ export async function DELETE(req: Request) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+    if (user.role !== "admin") return NextResponse.json({ error: "Only workspace admins can manage integrations." }, { status: 403 });
     const url = new URL(req.url);
     const type = url.searchParams.get("type");
     const id = Number(url.searchParams.get("id"));
     const provider = url.searchParams.get("provider");
     if (provider === "resend" || provider === "serpapi") {
       await deleteIntegrationKey(user.organization_id, provider);
+      await recordAuditEvent({ organizationId: user.organization_id, actorId: user.id, action: "integration.deleted", resourceType: "integration", resourceId: provider });
       return NextResponse.json({ deleted: true });
     }
     const table = type === "webhook" ? "webhooks" : "api_keys";
     const result = await pool.query(`DELETE FROM ${table} WHERE id = $1 AND organization_id = $2`, [id, user.organization_id]);
     if (!result.rowCount) return NextResponse.json({ error: "Integration not found." }, { status: 404 });
+    await recordAuditEvent({ organizationId: user.organization_id, actorId: user.id, action: `${table === "api_keys" ? "api_key" : "webhook"}.deleted`, resourceType: table === "api_keys" ? "api_key" : "webhook", resourceId: id });
     return NextResponse.json({ deleted: true });
   } catch (error) {
     console.error("Failed to delete integration", error);

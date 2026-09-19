@@ -64,6 +64,8 @@ console.
   scan failures.
 - Configure scheduled PDF reports with recipient, keyword, and platform
   filters.
+- Review executive analytics covering volume, engagement, sentiment mix,
+  source coverage, trends, and a risk watchlist.
 - Export report history and download generated PDF or CSV outputs.
 - Register signed webhooks so downstream systems can receive new intelligence.
 - Use the read-only posts API for internal dashboards and automation.
@@ -76,11 +78,23 @@ console.
   the workspace configuration without receiving plaintext keys.
 - Manage workspace integrations, API keys, webhooks, and dashboard preferences
   from the authenticated console.
+- Assign organization member roles and review an organization-scoped audit log
+  of administrative and destructive actions.
+- Connect provider-ready Slack, Microsoft Teams, Meta Graph, and Google
+  Business Profile credentials from the workspace integrations surface.
+- Run durable PostgreSQL-backed jobs with row locking, retry backoff, and a
+  dead-letter state using `npm run jobs:worker`.
 
 ### Enterprise-ready controls
 
 - Store Resend and SerpAPI credentials encrypted at rest with an
   organization-level encryption key.
+- Store Slack/Teams webhook URLs and Meta/Google access tokens encrypted at
+  rest as organization-owned provider configurations. Provider connection
+  tests run server-side; the browser receives only configured status and
+  never receives stored secrets. These integrations require credentials
+  supplied by the workspace owner; no platform application secrets are
+  bundled with the dashboard.
 - Keep provider credentials server-side; browsers receive configuration status,
   not secret values.
 - Enforce organization-scoped data access across workspace APIs.
@@ -106,6 +120,9 @@ console.
 - Webhook payloads include an HMAC-SHA256 signature.
 - Scraper requests use a separate shared HMAC secret and a five-minute
   freshness window.
+- Background jobs use `FOR UPDATE SKIP LOCKED`, stale-lock recovery, bounded
+  retries, exponential backoff, and dead-letter status. Start both the report
+  producer and `jobs:worker` for queued scheduled-report processing.
 - Password reset and email-verification tokens are stored only as SHA-256
   hashes and are single-use.
 - Configure `SCRAPER_SHARED_SECRET` identically in `dashboard/.env` and

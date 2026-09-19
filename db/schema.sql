@@ -183,13 +183,40 @@ CREATE INDEX IF NOT EXISTS idx_webhooks_org ON webhooks(organization_id, enabled
 CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_org ON webhook_deliveries(organization_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_retry ON webhook_deliveries(status, next_attempt_at);
 
+CREATE TABLE IF NOT EXISTS background_jobs (
+    id              BIGSERIAL PRIMARY KEY,
+    organization_id INTEGER REFERENCES organizations(id) ON DELETE CASCADE,
+    job_type        TEXT NOT NULL,
+    payload         JSONB NOT NULL DEFAULT '{}'::jsonb,
+    status          TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'dead_letter')),
+    attempts        INTEGER NOT NULL DEFAULT 0,
+    max_attempts    INTEGER NOT NULL DEFAULT 5,
+    available_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    locked_at       TIMESTAMPTZ,
+    locked_by      TEXT,
+    last_error      TEXT,
+    completed_at    TIMESTAMPTZ,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_background_jobs_claim ON background_jobs(status, available_at);
+CREATE INDEX IF NOT EXISTS idx_background_jobs_org ON background_jobs(organization_id, created_at DESC);
+
 CREATE TABLE IF NOT EXISTS organization_integrations (
     organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-    provider       TEXT NOT NULL CHECK (provider IN ('resend', 'serpapi')),
+    provider       TEXT NOT NULL CHECK (provider IN ('resend', 'serpapi', 'slack', 'microsoft_teams', 'meta_graph', 'google_business_profile')),
     encrypted_key  TEXT NOT NULL,
     updated_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
     PRIMARY KEY (organization_id, provider)
 );
+
+DO $$
+BEGIN
+    ALTER TABLE organization_integrations DROP CONSTRAINT IF EXISTS organization_integrations_provider_check;
+    ALTER TABLE organization_integrations ADD CONSTRAINT organization_integrations_provider_check
+      CHECK (provider IN ('resend', 'serpapi', 'slack', 'microsoft_teams', 'meta_graph', 'google_business_profile'));
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified_at TIMESTAMPTZ;
 
@@ -217,6 +244,18 @@ CREATE TABLE IF NOT EXISTS organization_members (
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
     PRIMARY KEY (organization_id, user_id)
 );
+
+CREATE TABLE IF NOT EXISTS audit_events (
+    id              BIGSERIAL PRIMARY KEY,
+    organization_id INTEGER NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    actor_id        INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    action          TEXT NOT NULL,
+    resource_type   TEXT NOT NULL,
+    resource_id     TEXT,
+    metadata        JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_audit_events_org_created ON audit_events(organization_id, created_at DESC);
 
 CREATE TABLE IF NOT EXISTS sessions (
     id         TEXT PRIMARY KEY,

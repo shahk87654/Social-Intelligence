@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "reports:worker": "node scripts/report-worker.mjs"
+    "reports:worker": "node scripts/report-worker.mjs",
+    "jobs:worker": "node scripts/job-worker.mjs"
   },
   "dependencies": {
     "@types/pdfkit": "^0.17.6",

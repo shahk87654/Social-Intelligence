@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, recordAuditEvent } from "@/lib/auth";
 import { pool } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -53,10 +53,12 @@ export async function POST(req: Request) {
 export async function DELETE(req: Request) {
   try {
     const user = await current();
+    if (user.role !== "admin") return NextResponse.json({ error: "Only workspace admins can delete projects." }, { status: 403 });
     const id = Number(new URL(req.url).searchParams.get("id"));
     if (!Number.isInteger(id)) return NextResponse.json({ error: "Valid project id is required." }, { status: 400 });
     const result = await pool.query("DELETE FROM monitoring_projects WHERE id = $1 AND organization_id = $2", [id, user.organization_id]);
     if (!result.rowCount) return NextResponse.json({ error: "Project not found." }, { status: 404 });
+    await recordAuditEvent({ organizationId: user.organization_id, actorId: user.id, action: "project.deleted", resourceType: "project", resourceId: id });
     return NextResponse.json({ deleted: true });
   } catch (error) {
     if (error instanceof Error && error.message === "UNAUTHORIZED") return NextResponse.json({ error: "Sign in required." }, { status: 401 });

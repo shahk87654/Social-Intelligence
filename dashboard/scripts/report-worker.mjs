@@ -7,9 +7,10 @@ if (!secret) {
 }
 
 async function processDueReports() {
-  const response = await fetch(`${appUrl}/api/report-schedules/run`, {
+  const response = await fetch(`${appUrl}/api/jobs/enqueue`, {
     method: "POST",
-    headers: { "x-report-worker-secret": secret },
+    headers: { "x-report-worker-secret": secret, "content-type": "application/json" },
+    body: JSON.stringify({ jobType: "report_schedule" }),
   });
   const body = await response.text();
   if (!response.ok) throw new Error(`Worker request failed (${response.status}): ${body}`);

@@ -88,6 +88,7 @@ export default function LandingPage() {
             <div>
               <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-slate-300">Company</h3>
               <div className="mt-5 space-y-3 text-sm text-slate-500">
+                <Link href="/about" className="block transition hover:text-white">About Signal / Intel</Link>
                 <a href="mailto:hello@signalintel.com" className="block transition hover:text-white">Contact us</a>
                 <a href="mailto:security@signalintel.com" className="block transition hover:text-white">Security</a>
                 <span className="block">Public-source intelligence</span>

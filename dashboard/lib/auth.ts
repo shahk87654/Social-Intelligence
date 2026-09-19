@@ -93,3 +93,27 @@ export async function getCurrentUser() {
   );
   return result.rows[0] || null;
 }
+
+export type CurrentUser = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>;
+
+export async function requireAdmin() {
+  const user = await getCurrentUser();
+  if (!user) return { user: null, response: "Sign in required." as const };
+  if (user.role !== "admin") return { user: null, response: "Only workspace admins can perform this action." as const };
+  return { user, response: null };
+}
+
+export async function recordAuditEvent(input: {
+  organizationId: number;
+  actorId?: number | null;
+  action: string;
+  resourceType: string;
+  resourceId?: string | number | null;
+  metadata?: Record<string, unknown>;
+}) {
+  await pool.query(
+    `INSERT INTO audit_events (organization_id, actor_id, action, resource_type, resource_id, metadata)
+     VALUES ($1, $2, $3, $4, $5, $6)`,
+    [input.organizationId, input.actorId ?? null, input.action, input.resourceType, input.resourceId == null ? null : String(input.resourceId), JSON.stringify(input.metadata || {})]
+  );
+}

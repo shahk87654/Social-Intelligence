@@ -13,6 +13,8 @@ const links = [
   { href: "/settings", label: "Settings", icon: "⚙" },
   { href: "/integrations", label: "Integrations", icon: "⌘" },
   { href: "/reports", label: "Reports", icon: "↗" },
+  { href: "/executive-reports", label: "Executive view", icon: "◈" },
+  { href: "/audit-logs", label: "Audit log", icon: "≡" },
 ];
 
 export default function Sidebar() {

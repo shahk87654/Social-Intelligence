@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, recordAuditEvent } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -74,11 +74,13 @@ export async function DELETE() {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+    if (user.role !== "admin") return NextResponse.json({ error: "Only workspace admins can clear records." }, { status: 403 });
     client = await pool.connect();
     await client.query("BEGIN");
     await client.query("DELETE FROM posts WHERE organization_id = $1", [user.organization_id]);
     await client.query("DELETE FROM scan_runs WHERE organization_id = $1", [user.organization_id]);
     await client.query("COMMIT");
+    await recordAuditEvent({ organizationId: user.organization_id, actorId: user.id, action: "posts.cleared", resourceType: "posts" });
     return NextResponse.json({ success: true, cleared: true });
   } catch (error) {
     if (client) await client.query("ROLLBACK").catch(() => undefined);

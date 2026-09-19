@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, recordAuditEvent } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+    if (user.role !== "admin") return NextResponse.json({ error: "Only workspace admins can manage report schedules." }, { status: 403 });
     const body = await req.json() as Record<string, unknown>;
     const { name, recipientEmail, keyword, platform, frequency, timezone, reportFormat, recipients, ccRecipients, emailSubject, emailMessage } = parseSchedule(body);
     const result = await pool.query(
@@ -60,6 +61,7 @@ export async function POST(req: NextRequest) {
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, now()) RETURNING *`,
       [user.organization_id, name, recipientEmail, keyword, platform, frequency, timezone, reportFormat, recipients, ccRecipients, emailSubject, emailMessage]
     );
+    await recordAuditEvent({ organizationId: user.organization_id, actorId: user.id, action: "report_schedule.created", resourceType: "report_schedule", resourceId: result.rows[0].id, metadata: { name } });
     return NextResponse.json({ schedule: result.rows[0] }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unable to create report schedule.";
@@ -72,6 +74,7 @@ export async function PATCH(req: NextRequest) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+    if (user.role !== "admin") return NextResponse.json({ error: "Only workspace admins can manage report schedules." }, { status: 403 });
     const body = await req.json() as Record<string, unknown>;
     const id = Number(body.id);
     if (!Number.isInteger(id)) return NextResponse.json({ error: "A valid schedule id is required." }, { status: 400 });
@@ -81,6 +84,7 @@ export async function PATCH(req: NextRequest) {
       [body.enabled, id, user.organization_id]
     );
     if (!result.rowCount) return NextResponse.json({ error: "Schedule not found." }, { status: 404 });
+    await recordAuditEvent({ organizationId: user.organization_id, actorId: user.id, action: "report_schedule.updated", resourceType: "report_schedule", resourceId: id, metadata: { enabled: body.enabled } });
     return NextResponse.json({ schedule: result.rows[0] });
   } catch (error) {
     console.error("Failed to update report schedule", error);
@@ -92,10 +96,12 @@ export async function DELETE(req: NextRequest) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+    if (user.role !== "admin") return NextResponse.json({ error: "Only workspace admins can manage report schedules." }, { status: 403 });
     const id = Number(req.nextUrl.searchParams.get("id"));
     if (!Number.isInteger(id)) return NextResponse.json({ error: "A valid schedule id is required." }, { status: 400 });
     const result = await pool.query("DELETE FROM report_schedules WHERE id = $1 AND organization_id = $2", [id, user.organization_id]);
     if (!result.rowCount) return NextResponse.json({ error: "Schedule not found." }, { status: 404 });
+    await recordAuditEvent({ organizationId: user.organization_id, actorId: user.id, action: "report_schedule.deleted", resourceType: "report_schedule", resourceId: id });
     return NextResponse.json({ deleted: true });
   } catch (error) {
     console.error("Failed to delete report schedule", error);
